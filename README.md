@@ -1,7 +1,8 @@
 # Project Idea: Fleet Management System
 
 ## Theme
-- **Fleet Management System**: Revolutionizing fleet management through decentralized and efficient data exchange.
+- **Fleet Management System**: The project proposes a solution for companies operating fleets dispersed across multiple locations. Consider a construction company with various worksites in different places. Not all vehicles return to headquarters daily, making fleet monitoring challenging. The concept involves a specific vehicle, which commutes daily between headquarters and one of the worksites, collecting data from vehicles and equipment at other worksites en route. Upon reaching headquarters, this vehicle reports all gathered data. This enables administrators to access critical information about the entire fleet, such as fuel levels and distance traveled, even for vehicles not returning daily. Communication between vehicles and headquarters would utilize ad-hoc communication protocols like IPFS with ITS-GX.
+![RSA-Schema](https://github.com/CatarinaBarroqueiro/rsa_proj/assets/95221731/91033f00-d7b4-4480-be54-f52a614d84fd)
 
 ## Goals
 - **Decentralization**:
