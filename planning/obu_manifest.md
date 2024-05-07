@@ -191,6 +191,14 @@ While KML/KMZ offers some built-in data storage compared to GPX, it's still bene
 
 **KML/KMZ** file formats are widely used in Spatial and Geographics application, like Google Earth. Ensuring coherent structure of the file and some modifications, could make it suitable for those applications. However, due to the modular nature of the proposed work here, it would probable more suitable to choose an open-source application to modify. Some research can be made to find a suitable platform in websites like Github [^6], with this tip being referenced to both approaches described in this file.
 
+## Remarks
+
+In the simulation, it would be best for all nodes to follow a particular path, possibly provided by a simple GPX file, with some overlap of routes. This doesn't invalidate that some nodes may remain stationary, at least for some time, however, all nodes should be able to establish communication, with at least one other node throught the simulation.
+
+# Technologies
+
+This module should be ideally developed in python, as to use the Python IPFS API [^5], which will exchange the files between vehicles. The module should also periodically send messages with it's position to an MQTT broker, which will be retrieved by the Orchestrator, as to simulate the drop/regain of connectivity
+
 # References
 
 * What is a GPX file [^1](https://hikingguy.com/how-to-hike/what-is-a-gpx-file/)
