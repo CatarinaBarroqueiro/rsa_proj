@@ -89,6 +89,107 @@ In terms of animation, there are a number of services which can take GPX files a
 
 ## Approach 2
 
+A more robust and complete, but also more complex is the **KMZ** (**Keyhole Markup Zipped**)  file format, which consists of a main **KML** (**Keyhole Markup Language**) file and zero or more supporting files that are packaged using a Zip utility into one unit, called an archive. When the KMZ file is unzipped, the main .kml file and its supporting files are separated into their original formats and directory structure, with their original filenames and extensions. In addition to being an archive format, the Zip format is also compressed, so an archive can include only a single large KML file. Depending on the content of the KML file, this process typically results in 10:1 compression. Your 10 Kbyte KML file can be served with a 1 Kbyte KMZ file ([^4]).
+
+### File Structure
+
+#### KML (Keyhole Markup Language)  Stores geographic data in an XML format, describing things like places, points of interest, imagery, and 3D models on the globe.
+
+**Structure:**
+
+* **XML Header:** Every KML file starts with a standard XML header line indicating it's an XML document and specifying the encoding (usually UTF-8). 
+* **KML Namespace:** Following the header, KML files (specifically KML version 2.2 and above) include a namespace declaration. This line defines the KML vocabulary used in the file.
+* **Document Element:** The core content of the KML file resides within the `<kml>` tag, which acts as the document element.
+
+**Tags:** KML uses a hierarchy of tags to represent geographic features and define their properties. An overview of some key tags are as follows:
+
+* **Placemark:** This fundamental tag defines a specific location or point of interest. It can contain sub-tags for:
+    * `<name>`: Label displayed for the placemark.
+    * `<coordinates>`: Geographic location specified by longitude, latitude, and optionally altitude.
+    * `<description>`: Optional tag for adding a detailed description in HTML format.
+    *  Icon and style information tags to customize the visual appearance.
+
+* **Geometry:**  This section defines the geometric shapes displayed on the map. It can include tags for:
+    * `<Point>`: Represents a single point location.
+    * `<LineString>`: Defines a path or route as a sequence of connected points. 
+    * `<Polygon>`: Creates a closed shape with an optional altitude for each vertex.
+    * `<MultiGeometry>`: Groups multiple geometries like points, lines, or polygons together.
+
+* **Imagery:** KML supports incorporating imagery like photos or ground overlays:
+    * `<GroundOverlay>`: Places a flat image on the map surface at a specified location and size.
+
+* **3D Models:** 3D models can be integrated using the `<Model>` tag, which references a COLLADA (.dae) file containing the 3D model data.
+
+* **Folders:** To organize complex KML files, the `<Folder>` tags can be used to group related features like placemarks or geometries.
+
+**Additional Points:**
+
+* Tags are case-sensitive. Ensure proper capitalization (e.g., `<Placemark>` not `<placemark>`) for them to function correctly.
+* Attributes can be added to some tags to provide further details. For instance, the `<coordinates>` tag might have an attribute specifying altitude units (meters, feet).
+* KML allows linking to external files using relative paths within the KMZ archive or full web URLs for online resources.
+
+#### KMZ (Keyhole Markup Zipped): A compressed archive format. Bundles the main KML file along with additional resources like images, icons, and 3D models used by the KML. 
+* Easier storage and transfer: Since it's a single file, it's convenient to share and store.
+* Compressed size: Saves space by compressing the bundled files.
+* KML files can reference various external files to enhance the visualization:
+    * Images (JPEG, PNG): Used for overlays, like photos on the map.
+    * Icons (.gif, .png): Represent points of interest like markers or symbols.
+    * COLLADA models (.dae): Integrate 3D models of buildings or structures.
+
+**Integration with KML:** The KML file uses tags to reference the external files. These tags specify the file path relative to the KML or the full web address if it's an online resource.
+* For example, an image overlay might have a tag like `<href>images/myphoto.jpg</href>` which points to an image file within the KMZ archive.
+
+
+### Implementation on the GPS logger
+
+While KML/KMZ offers some built-in data storage compared to GPX, it's still beneficial to integrate it with JSON. There are two main approaches to combine KML/KMZ with JSON for sensor data and events:
+
+1. **KML ExtendedData:**
+
+* KML allows embedding custom data within the `<ExtendedData>` tag of various KML elements like Placemarks, Linestrings, or Polygons.
+* You can define custom tags within `<ExtendedData>` to store sensor data readings and event types along with timestamps.
+
+**Example:**
+
+```xml
+<Placemark>
+  <name>Stop at Gas Station</name>
+  <ExtendedData>
+    <FuelLevel>80</FuelLevel>
+    <EventType>Stop</EventType>
+    <Timestamp>2024-05-08T12:00:00Z</Timestamp>
+  </ExtendedData>
+  <Point>
+    <coordinates>-122.4068, 37.7833</coordinates>
+  </Point>
+</Placemark>
+```
+
+
+2. **Linked JSON:**
+
+* Similar to GPX integration, by creating a reference system within KML.
+* Include a KML element (like a NetworkLink) that points to a separate JSON file containing detailed sensor data and events.
+* This approach keeps the KML file clean and focused on geospatial data, while the JSON stores the extensive sensor information.
+
+**Benefits:**
+
+* **KML with ExtendedData:** Offers a more integrated approach, keeping all data within the KML/KMZ file. 
+* **KML with Linked JSON:** Maintains a clean KML structure and allows for more flexible and detailed data storage in JSON.
+
+**Challenges:**
+
+* **KML with ExtendedData:** Requires defining and managing custom tags within KML, potentially increasing complexity. 
+* **KML with Linked JSON:** Introduces similar challenges to GPX integration, requiring file management and linking mechanisms.
+
+**Additional Considerations:**
+
+* **KML Limitations:** KML doesn't natively validate custom data types. Ensure proper data formatting within `<ExtendedData>` tags for consistent interpretation.
+* Both approaches could be used in a hybrid format, where the KML would contain all the vehicle events (fuel levels, sudden accelerations/braking...), while other vehicles data could be referenced and saved in JSON or even KML formats
+
+### Visualization/Animation
+
+**KML/KMZ** file formats are widely used in Spatial and Geographics application, like Google Earth. Ensuring coherent structure of the file and some modifications, could make it suitable for those applications. However, due to the modular nature of the proposed work here, it would probable more suitable to choose an open-source application to modify. Some research can be made to find a suitable platform in websites like Github [^6], with this tip being referenced to both approaches described in this file.
 
 # References
 
@@ -98,3 +199,4 @@ In terms of animation, there are a number of services which can take GPX files a
 * KMZ and KML file formats explanation [^4](https://developers.google.com/kml/documentation/kmzarchives)
 * KML file format reference [^4](https://developers.google.com/kml/documentation/kmlreference)
 * Python IPFS API [^5](https://pypi.org/project/ipfs-api/)
+* Github KML visualizer [^6](https://github.com/search?q=kml%20visualizer&type=repositories)
