@@ -1,0 +1,19 @@
+
+óë[
+    {
+      "timestamp": "2024-05-07T10:20:00Z",
+      "sensorData": {
+        "fuelLevel": 75,
+        "seatbeltStatus": "engaged"
+      },
+      "eventType": "stop"
+    },
+    {
+      "timestamp": "2024-05-07T10:25:12Z",
+      "sensorData": {
+        "fuelLevel": 74,
+        "acceleration": 0.5 
+      },
+      "eventType": "start"
+    }
+  ]ë
