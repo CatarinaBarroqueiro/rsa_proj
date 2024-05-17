@@ -1,0 +1,83 @@
+
+version: "3.7"
+services:
+  fleeta-mqtt-broker:
+    image: eclipse-mosquitto
+    container_name: fleeta-mqtt-broker
+    ports:
+      - "1883:1883" #default mqtt port
+      - "9001:9001" #default mqtt port for websockets
+    volumes:
+      - ./orchestrator/mqtt-broker/config:/mosquitto/config:rw
+      - ./orchestrator/mqtt-broker/data:/mosquitto/data:rw
+      - ./orchestrator/mqtt-broker/log:/mosquitto/log:rw
+    restart: unless-stopped
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.10
+
+  fleeta-obu_1:
+    image: fleeta-obu:1.0
+    container_name: fleeta-obu_1
+    privileged: true
+    environment:
+      - OBU_ID=1
+      - MQTT_BROKER_HOST=192.168.98.10
+      - MQTT_BROKER_PORT=1883
+      - MQTT_GPS_TOPIC=gps-location
+      - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_barra.gpx
+      - GPS_MOCK_SPEED=10
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:01
+    depends_on:
+      - fleeta-mqtt-broker
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.11
+
+  fleeta-obu_2:
+    image: fleeta-obu:1.0
+    container_name: fleeta-obu_2
+    environment:
+      - OBU_ID=2
+      - MQTT_BROKER_HOST=192.168.98.10
+      - MQTT_BROKER_PORT=1883
+      - MQTT_GPS_TOPIC=gps-location
+      - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_comboio.gpx
+      - GPS_MOCK_SPEED=10
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:02
+    depends_on:
+      - fleeta-mqtt-broker
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.12
+
+  fleeta-obu_3:
+    image: fleeta-obu:1.0
+    container_name: fleeta-obu_3
+    environment:
+      - OBU_ID=3
+      - MQTT_BROKER_HOST=192.168.98.10
+      - MQTT_BROKER_PORT=1883
+      - MQTT_GPS_TOPIC=gps-location
+      - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_estaleiros.gpx
+      - GPS_MOCK_SPEED=10
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:03
+    depends_on:
+      - fleeta-mqtt-broker
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.13
+
+# volumes for mapping data,config and log
+volumes:
+  config:
+  data:
+  log:
+
+networks:
+  fleeta-network:
+    external: true
+
