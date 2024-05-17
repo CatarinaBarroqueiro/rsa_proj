@@ -2,13 +2,12 @@
 `GPS` package is used to simulate the GPS module of the OBU, by reading the coordinates of a
 generated GPX file.
 """
+import json
 from xml.dom.minidom import Element
-from attr import dataclass
 import xml.etree.ElementTree as ET
 import os
 import datetime
 
-@dataclass
 class Location:
     """
     Class `Location` represents a location on the map.
@@ -20,7 +19,43 @@ class Location:
     latitude: str
     longitude: str
     elevation: str
-    timestamp: str
+    timestamp: datetime.datetime
+
+    def __init__(self, latitude: str, longitude: str, elevation: str, timestamp: datetime.datetime) -> None:
+        """
+        Initialize the class
+        Args:
+            - latitude: The latitude of the location
+            - longitude: The longitude of the location
+            - elevation: The elevation of the location
+            - timestamp: The timestamp of the location
+        """
+        self.latitude = latitude
+        self.longitude = longitude
+        self.elevation = elevation
+        self.timestamp = timestamp
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the location
+        Returns:
+            - The string representation of the location
+        """
+        return f"Location: {self.latitude}, {self.longitude}, {self.elevation}, {self.timestamp}"
+    
+    def json_to_str(self) -> str:
+        """
+        Transform the Location data to JSON format
+        Returns:
+            - The Location data in JSON format
+        """
+        data: json = {
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "elevation": self.elevation,
+            "timestamp": str(self.timestamp)
+        }
+        return json.dumps(data)
 
 
 class GPS:
@@ -62,7 +97,7 @@ class GPS:
         lat: str = trkpt.attrib["lat"]
         lon: str = trkpt.attrib["lon"]
         ele: str = trkpt.find("{http://www.topografix.com/GPX/1/1}ele").text
-        timestamp: str = datetime.datetime.now()
+        timestamp: datetime.datetime = datetime.datetime.now()
 
         return Location(lat, lon, ele, timestamp)
     
