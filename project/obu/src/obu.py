@@ -16,7 +16,7 @@ def get_mac() -> str:
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
 
 
-def lifecycle(mqtt: MQTT, gps: GPS, frequency: int) -> None:
+def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str) -> None:
     """
     The lifecycle of the OBU
     Args:
@@ -30,7 +30,8 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int) -> None:
         "device": "OBU",
         "id": os.environ['OBU_ID'],
         "status": "active",
-        "mac": get_mac()
+        "mac": get_mac(),
+        "ip": ipAddress
     }
 
     # Publish the greeting message to the MQTT broker
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     logging_format = "[%(levelname)s] %(message)s"
     logging.basicConfig(level = logLevel, format=logging_format)
 
-    logging.info("OBU with ID: %s, has mac address of %s", os.environ['OBU_ID'], get_mac())
+    logging.info("OBU with ID: %s, has mac address of %s and IP: %s", os.environ['OBU_ID'], get_mac(), os.environ['IP_ADDR'])
 
     # Create MQTT client
     topic: str = os.environ['MQTT_GPS_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     
     print("Starting OBU lifecycle")
     try:
-        lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']))
+        lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'])
     except ConnectionError as e:
         logging.error("Failed to publish GPS data: " + str(e))
     except KeyboardInterrupt:

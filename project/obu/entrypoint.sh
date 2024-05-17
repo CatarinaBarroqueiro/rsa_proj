@@ -4,9 +4,9 @@
 ## This section is used to configure the network block/unblock functionality ##
 ###############################################################################
 
-#IP_ADDR=$(ip -f inet addr show eth0 | awk '/inet / {print $2}')
-#GW_ADDR=$(ip r | awk '/default / {print $3}')
-#BR_ID=br0
+IP_ADDR=$(ip -f inet addr show eth0 | awk '/inet / {print $2}')
+GW_ADDR=$(ip r | awk '/default / {print $3}')
+BR_ID=br0
 #
 #if [ -n "$SUPPORT_MAC_BLOCKING" ] && [ $SUPPORT_MAC_BLOCKING = true ] ; then
 #    brctl addbr $BR_ID
@@ -25,6 +25,9 @@ chmod +x /bin/unblock
 ###############################################################################
 ##            This section is used to start the OBU application              ##
 ###############################################################################
+
+# Export machine IP address
+export IP_ADDR
 
 sleep 3 # Just to give time for the broker to start
 
