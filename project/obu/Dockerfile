@@ -5,6 +5,8 @@ USER root
 
 RUN apt-get update && apt-get upgrade -y 
 
+RUN apt-get install iputils-ping ebtables -y
+
 #RUN apt-get install -y python3.10 python3-pip
 
 #RUN python3 -m pip install --upgrade pip

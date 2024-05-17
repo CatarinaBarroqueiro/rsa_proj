@@ -50,6 +50,7 @@ class Location:
             - The Location data in JSON format
         """
         data: json = {
+            "type": "GPS",
             "latitude": self.latitude,
             "longitude": self.longitude,
             "elevation": self.elevation,

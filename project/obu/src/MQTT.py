@@ -1,6 +1,7 @@
 """
 `MQTT` package is used to communicate with the MQTT broker, by publishing the the OBU gps data
 """
+import logging
 import paho.mqtt.client as mqtt
 
 class MQTT:
@@ -44,6 +45,7 @@ class MQTT:
         Raises:
             - ConnectionError: If the connection to the MQTT broker fails
         """
+        logging.debug("Publishing to MQTT: " + message + " to topic: " + self.topic)
         self.client.publish(self.topic, message)
 
     def disconnect(self) -> None:

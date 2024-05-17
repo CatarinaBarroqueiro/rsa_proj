@@ -19,6 +19,7 @@ services:
   fleeta-obu_1:
     image: fleeta-obu:1.0
     container_name: fleeta-obu_1
+    privileged: true
     environment:
       - OBU_ID=1
       - MQTT_BROKER_HOST=192.168.98.10
@@ -26,7 +27,8 @@ services:
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_barra.gpx
       - GPS_MOCK_SPEED=10
-    mac_address: 6e:06:e0:03:00:01
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:01
     depends_on:
       - fleeta-mqtt-broker
     networks:
@@ -43,7 +45,8 @@ services:
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_comboio.gpx
       - GPS_MOCK_SPEED=10
-    mac_address: 6e:06:e0:03:00:02
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:02
     depends_on:
       - fleeta-mqtt-broker
     networks:
@@ -60,7 +63,8 @@ services:
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_estaleiros.gpx
       - GPS_MOCK_SPEED=10
-    mac_address: 6e:06:e0:03:00:03
+      - LOG_LEVEL=INFO
+    mac_address: 02:42:c0:a8:62:03
     depends_on:
       - fleeta-mqtt-broker
     networks:
