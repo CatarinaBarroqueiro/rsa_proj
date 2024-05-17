@@ -12,6 +12,9 @@ services:
       - ./orchestrator/mqtt-broker/data:/mosquitto/data:rw
       - ./orchestrator/mqtt-broker/log:/mosquitto/log:rw
     restart: unless-stopped
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.10
 
   fleeta-obu_1:
     image: fleeta-obu:1.0
@@ -24,11 +27,13 @@ services:
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_barra.gpx
       - GPS_MOCK_SPEED=10
       - SUPPORT_MAC_BLOCKING=true
-      - MAC_ADDRESS=6e:06:e0:03:00:01
-      - VANETZA_INTERFACE=br0
+      - INTERFACE=br0
+    mac_address: 6e:06:e0:03:00:01
     depends_on:
       - fleeta-mqtt-broker
-    
+    networks:
+      fleeta-network:
+          ipv4_address: 192.168.98.11
 
 # volumes for mapping data,config and log
 volumes:
@@ -37,6 +42,6 @@ volumes:
   log:
 
 networks:
-  default:
-    name: fleeta-network
+  fleeta-network:
+    external: true
 

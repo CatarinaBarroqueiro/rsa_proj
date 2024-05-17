@@ -1,6 +1,5 @@
 import os
 import paho.mqtt.client as mqtt
-import xml.etree.ElementTree as ET
 
 def connect_to_mqtt_broker(broker_address: str, broker_port: int) -> mqtt.Client:
     client = mqtt.Client()
@@ -11,6 +10,12 @@ def connect_to_mqtt_broker(broker_address: str, broker_port: int) -> mqtt.Client
 broker_address = "mqtt.example.com"
 broker_port = 1883
 topic = "gpx_data"
+
+# print the current timestamp
+# print the current timestamp
+import datetime
+print(datetime.datetime.now())
+
 
 # GPX file path
 gpx_file = "/path/to/gpx/file.gpx"

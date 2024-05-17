@@ -4,8 +4,8 @@
 ## This section is used to configure the network block/unblock functionality ##
 ###############################################################################
 
-IP_ADDR=$(ip addr -f inet addr show eth0 | awk '/inet / {print $2}')
-GW_ADDR=$(ip addr r | awk '/default / {print $3}')
+IP_ADDR=$(ip -f inet addr show eth0 | awk '/inet / {print $2}')
+GW_ADDR=$(ip r | awk '/default / {print $3}')
 BR_ID=br0
 
 if [ -n "$SUPPORT_MAC_BLOCKING" ] && [ $SUPPORT_MAC_BLOCKING = true ] ; then

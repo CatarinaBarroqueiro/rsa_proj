@@ -1,5 +1,11 @@
-FROM python:latest
+FROM debian:bullseye-slim
 ENV TZ=Europe/Lisbon
+
+USER root
+
+RUN apt-get update && apt-get upgrade -y 
+
+RUN apt-get install -y python3 python3-pip
 
 WORKDIR /app
 ENV EMBEDDED_MOSQUITTO_PORT=1883
