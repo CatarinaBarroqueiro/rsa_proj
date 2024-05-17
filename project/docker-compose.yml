@@ -1,7 +1,6 @@
 
 version: "3.7"
 services:
-  # mqtt5 eclipse-mosquitto
   mqtt5:
     image: eclipse-mosquitto
     container_name: mqtt5
@@ -9,9 +8,9 @@ services:
       - "1883:1883" #default mqtt port
       - "9001:9001" #default mqtt port for websockets
     volumes:
-      - ./config:/mosquitto/config:rw
-      - ./data:/mosquitto/data:rw
-      - ./log:/mosquitto/log:rw
+      - ./orchestrator/mqtt-broker/config:/mosquitto/config:rw
+      - ./orchestrator/mqtt-broker/data:/mosquitto/data:rw
+      - ./orchestrator/mqtt-broker/log:/mosquitto/log:rw
     restart: unless-stopped
 
 # volumes for mapping data,config and log
