@@ -1,0 +1,16 @@
+{
+    "pins": [
+        {
+            "cluster": "cluster2",
+            "cid": "QmWHJnaEkexB9mFarSAsJVXKwQdyCidtgXbwbtvFMYJGo4"
+        },
+        {
+            "cluster": "cluster0",
+            "cid": "QmWHJnaEkexB9mFarSAsJVXKwQdyCidtgXbwbtvFMYJGo4"
+        },
+        {
+            "cluster": "cluster1",
+            "cid": "QmWHJnaEkexB9mFarSAsJVXKwQdyCidtgXbwbtvFMYJGo4"
+        }
+    ]
+}
