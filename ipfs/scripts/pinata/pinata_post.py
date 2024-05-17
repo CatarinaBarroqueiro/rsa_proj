@@ -15,8 +15,8 @@ def retrieve_from_pinata(filepath, jwt_token):
         return response.json()
     
 
-PINATA_JWT_TOKEN = os.getenv('PINATA_JWT_TOKEN')
+# PINATA_JWT_TOKEN = os.getenv('PINATA_JWT_TOKEN')
 
-FILE_PATH = 'test.jpg'
+# FILE_PATH = 'rsa.json'
 
-print (retrieve_from_pinata(FILE_PATH, PINATA_JWT_TOKEN))
+# print (retrieve_from_pinata(FILE_PATH, PINATA_JWT_TOKEN))
