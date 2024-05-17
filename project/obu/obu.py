@@ -1,3 +1,4 @@
+import os
 import paho.mqtt.client as mqtt
 import xml.etree.ElementTree as ET
 
@@ -18,10 +19,10 @@ gpx_file = "/path/to/gpx/file.gpx"
 client = mqtt.Client()
 
 # Connect to MQTT broker
-client.connect(broker_address, broker_port)
+client.connect(os.environ['MQTT_BROKER_HOST'], os.environ['MQTT_BROKER_PORT'])
 
 # Read GPX data from file
-tree = ET.parse(gpx_file)
+tree = ET.parse(os.environ['MQTT_GPS_TOPIC'])
 root = tree.getroot()
 
 # Extract relevant data from GPX file
@@ -33,7 +34,7 @@ for trkpt in root.findall(".//{http://www.topografix.com/GPX/1/1}trkpt"):
 
     # Publish data to MQTT broker
     message = f"Latitude: {lat}, Longitude: {lon}, Elevation: {ele}"
-    client.publish(topic, message)
+    client.publish(os.environ['MQTT_GPS_TOPIC'], message)
 
 # Disconnect from MQTT broker
 client.disconnect()

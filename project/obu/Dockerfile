@@ -9,7 +9,9 @@ RUN pip install -r requirements.txt
 
 COPY obu.py obu.py
 
-COPY entrypoint.sh entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY mock_gpx mock_gpx
 
-ENTRYPOINT ["/entrypoint.sh"]
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]

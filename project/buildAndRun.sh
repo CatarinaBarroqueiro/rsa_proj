@@ -2,8 +2,8 @@
 docker compose down
 
 # Variables
-obuImageName="Fleeta-OBU"
-rsuImageName="Fleeta-RSU"
+obuImageName="fleeta-obu"
+rsuImageName="fleeta-rsu"
 
 # Build OBU image
 cd obu

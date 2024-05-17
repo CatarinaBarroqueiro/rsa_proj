@@ -1,9 +1,9 @@
 
 version: "3.7"
 services:
-  mqtt5:
+  fleeta-mqtt-broker:
     image: eclipse-mosquitto
-    container_name: mqtt5
+    container_name: fleeta-mqtt-broker
     ports:
       - "1883:1883" #default mqtt port
       - "9001:9001" #default mqtt port for websockets
@@ -13,6 +13,23 @@ services:
       - ./orchestrator/mqtt-broker/log:/mosquitto/log:rw
     restart: unless-stopped
 
+  fleeta-obu_1:
+    image: fleeta-obu:1.0
+    container_name: fleeta-obu_1
+    environment:
+      - OBU_ID=1
+      - MQTT_BROKER_HOST=localhost
+      - MQTT_BROKER_PORT=1883
+      - MQTT_GPS_TOPIC=gps-location
+      - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_barra.gpx
+      - GPS_MOCK_SPEED=10
+      - SUPPORT_MAC_BLOCKING=true
+      - MAC_ADDRESS=6e:06:e0:03:00:01
+      - VANETZA_INTERFACE=br0
+    depends_on:
+      - fleeta-mqtt-broker
+    
+
 # volumes for mapping data,config and log
 volumes:
   config:
@@ -21,5 +38,5 @@ volumes:
 
 networks:
   default:
-    name: mqtt5-network
+    name: fleeta-network
 
