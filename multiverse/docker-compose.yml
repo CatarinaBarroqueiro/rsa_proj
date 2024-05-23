@@ -15,7 +15,7 @@ services:
     environment:
       - GO111MODULE=on
     privileged: true
-    command: ["/entrypoint-peer1.sh"]
+
 
   multiverse-peer2:
     build:
@@ -31,7 +31,6 @@ services:
     environment:
       - GO111MODULE=on
     privileged: true
-    command: ["/entrypoint-peer2.sh"]
 
 volumes:
   shared-data:

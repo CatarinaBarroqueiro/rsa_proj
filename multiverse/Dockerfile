@@ -26,5 +26,5 @@ COPY entrypoint-peer2.sh /entrypoint-peer2.sh
 # Ensure the scripts are executable
 RUN chmod +x /entrypoint-peer1.sh /entrypoint-peer2.sh
 
-# Default to a basic command to keep the container running
-CMD ["tail", "-f", "/dev/null"]
+# Set the entrypoint script to be executed
+ENTRYPOINT ["/entrypoint-peer1.sh"]
