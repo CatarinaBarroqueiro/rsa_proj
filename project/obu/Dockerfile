@@ -26,4 +26,3 @@ COPY configBridge.sh configBridge.sh
 RUN ["chmod", "+x", "./configBridge.sh"]
 
 ENTRYPOINT ["/bin/sh", "-c", "./entrypoint.sh"]
-#ENTRYPOINT ["./entrypoint.sh"]

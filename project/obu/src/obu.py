@@ -7,6 +7,7 @@ from GPS import GPS, Location
 from MQTT import MQTT
 import logging
 
+
 def get_mac() -> str:
     """
     Get the MAC address of the OBU

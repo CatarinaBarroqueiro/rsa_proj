@@ -14,7 +14,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Build RSU image
-# ...
+#...
 
 # Run the containers
 cd ..

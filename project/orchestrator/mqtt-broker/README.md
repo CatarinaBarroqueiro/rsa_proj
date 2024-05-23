@@ -43,6 +43,8 @@ persistence_location /mosquitto/data/
 touch config/pwfile
 ```
 
+# The rest are optional
+
 ## 5. Create docker-compose file called 'docker-compose.yml'
 
 ```yml
