@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  multiverse-peer:
-    image: multiverse-vcs/multiverse-peer:latest
+  multiverse-peer1:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./fleeta-vehicles-data:/fleeta-vehicles-data
+      - ./peer1-data:/fleeta-vehicles-data
+      - ./shared-data:/shared-data  
     ports:
       - "4001:4001"
       - "5001:5001"
@@ -15,4 +15,23 @@ services:
     environment:
       - GO111MODULE=on
     privileged: true
-    entrypoint: ["/entrypoint.sh"]
+    command: ["/entrypoint-peer1.sh"]
+
+  multiverse-peer2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./peer2-data:/fleeta-vehicles-data
+      - ./shared-data:/shared-data 
+    ports:
+      - "4002:4001"
+      - "5002:5001"
+      - "8081:8080"
+    environment:
+      - GO111MODULE=on
+    privileged: true
+    command: ["/entrypoint-peer2.sh"]
+
+volumes:
+  shared-data:

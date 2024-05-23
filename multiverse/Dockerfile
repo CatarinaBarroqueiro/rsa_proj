@@ -19,12 +19,12 @@ RUN make install
 # Create a directory for the project and switch to it
 WORKDIR /fleeta-vehicles-data
 
-# Copy entrypoint script into the container
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy the entrypoint scripts into the container
+COPY entrypoint-peer1.sh /entrypoint-peer1.sh
+COPY entrypoint-peer2.sh /entrypoint-peer2.sh
 
-# Expose necessary ports (if any)
-# EXPOSE 4001 5001 8080
+# Ensure the scripts are executable
+RUN chmod +x /entrypoint-peer1.sh /entrypoint-peer2.sh
 
-# Run the entrypoint script
-ENTRYPOINT ["/entrypoint.sh"]
+# Default to a basic command to keep the container running
+CMD ["tail", "-f", "/dev/null"]
