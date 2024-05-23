@@ -1,0 +1,11 @@
+{
+	"branch": "main",
+	"branches": {
+		"main": {
+			"head": null,
+			"stash": null,
+			"remote": "origin"
+		}
+	},
+	"remotes": {}
+}

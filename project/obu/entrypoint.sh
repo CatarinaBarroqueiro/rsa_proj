@@ -19,7 +19,7 @@ chmod +x /bin/unblock
 # Export machine IP address
 export IP_ADDR
 
-sleep 3 # Just to give time for the broker to start
+sleep 10 # Just to give time for the broker to start
 
 echo "Starting OBU_$OBU_ID application"
 cd ./src

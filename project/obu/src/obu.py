@@ -1,3 +1,6 @@
+"""
+`obu.py` is the main script for the OBU. It represents it's lifecycle.
+"""
 import json
 import os
 from time import sleep
@@ -73,7 +76,7 @@ if __name__ == "__main__":
         logging.error("Failed to read GPX file: " + str(e))
         exit(1)
     
-    print("Starting OBU lifecycle")
+    logging.info("Starting OBU lifecycle")
     try:
         lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'])
     except ConnectionError as e:

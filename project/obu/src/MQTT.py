@@ -1,5 +1,5 @@
 """
-`MQTT` package is used to communicate with the MQTT broker, by publishing the the OBU gps data
+`MQTT` package is used to communicate with the MQTT broker, by publishing the OBU gps data
 """
 import logging
 import paho.mqtt.client as mqtt

@@ -15,6 +15,7 @@ class Location:
         - latitude: The latitude of the location
         - longitude: The longitude of the location
         - elevation: The elevation of the location
+        - timestamp: The timestamp of the location
     """
     latitude: str
     longitude: str
