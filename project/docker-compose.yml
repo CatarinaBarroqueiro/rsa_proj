@@ -27,7 +27,7 @@ services:
       - MQTT_BROKER_PORT=1883
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_barra.gpx
-      - GPS_MOCK_SPEED=10
+      - GPS_MOCK_SPEED=5
       - LOG_LEVEL=INFO
       - SUPPORT_MAC_BLOCKING=true
     mac_address: 02:42:c0:a8:62:01
@@ -47,7 +47,7 @@ services:
       - MQTT_BROKER_PORT=1883
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_comboio.gpx
-      - GPS_MOCK_SPEED=10
+      - GPS_MOCK_SPEED=5
       - LOG_LEVEL=INFO
       - SUPPORT_MAC_BLOCKING=true
     mac_address: 02:42:c0:a8:62:02
@@ -67,7 +67,7 @@ services:
       - MQTT_BROKER_PORT=1883
       - MQTT_GPS_TOPIC=gps-location
       - GPX_FILE_PATH=/app/mock_gpx/aveiro_it_estaleiros.gpx
-      - GPS_MOCK_SPEED=10
+      - GPS_MOCK_SPEED=5
       - LOG_LEVEL=INFO
       - SUPPORT_MAC_BLOCKING=true
     mac_address: 02:42:c0:a8:62:03

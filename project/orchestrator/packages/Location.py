@@ -58,7 +58,7 @@ class Location:
         return json.dumps(data)
     
     @staticmethod
-    def locations_close(self, location1, location2) -> bool:
+    def locations_close(location1, location2) -> bool:
         """
         Check if two locations are close to each other. Within a radius of 100 meters (including elevation)
         Args:

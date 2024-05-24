@@ -67,11 +67,12 @@ class Device:
         """
         Configure the device
         """
+        logging.info("Configuring device: " + str(self.deviceID))
         if self.deviceType == "OBU":
-            os.system(f'docker exec --privileged fleeta-obu-{self.deviceID} /bin/bash -c "sh configBridge.sh"')
+            os.system(f'docker exec --privileged fleeta-obu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')
             return True
         elif self.deviceType == "RSU":
-            os.system(f'docker exec --privileged fleeta-rsu-{self.deviceID} /bin/bash -c "sh configBridge.sh"')
+            os.system(f'docker exec --privileged fleeta-rsu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')
             return True
         else:
             return False
@@ -88,11 +89,11 @@ class Device:
             return False
         
         if self.deviceType == "OBU":
-            os.system(f"docker exec fleeta-obu-{self.deviceID} block {macToBlock}")
+            print(os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} block {macToBlock}"))
             self.blockedMac.append(macToBlock)
             return True
         elif self.deviceType == "RSU":
-            os.system(f"docker exec fleeta-rsu-{self.deviceID} block {macToBlock}")
+            os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} block {macToBlock}")
             self.blockedMac.append(macToBlock)
             return True
         else:
@@ -110,11 +111,11 @@ class Device:
             return False
         
         if self.deviceType == "OBU":
-            os.system(f"docker exec fleeta-obu-{self.deviceID} unblock {macToUnblock}")
+            os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
             self.blockedMac.remove(macToUnblock)
             return True
         elif self.deviceType == "RSU":
-            os.system(f"docker exec fleeta-rsu-{self.deviceID} unblock {macToUnblock}")
+            os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToUnblock}")
             self.blockedMac.remove(macToUnblock)
             return True
         else:

@@ -3,12 +3,13 @@
 """
 import logging
 import json
+import codecs
 import paho.mqtt.client as mqtt
 import datetime
 from threading import Lock, Timer
 from packages.Location import Location
 from packages.Device import Device
-
+from packages.Utils import check_dict_fields
 
 class MQTT:
     """
@@ -51,7 +52,7 @@ class MQTT:
         self.client.on_connect = self.on_connect
         # Repeatly call the loop() in a thread, until disconnect() is called
         self.client.loop_start()
-        #self.client.subscribe(self.topic)
+        self.client.subscribe(self.topic)
 
 
     def publish(self, message: str) -> None:
@@ -100,11 +101,13 @@ class MQTT:
 
         # Convert message payload to dictionary
         try:
-            payload: dict = json.loads(message.payload)
+            # message.payload is in byte format, so need to convert to string first
+            messageStr: str = codecs.decode(message.payload, "utf-8")
+            payload: dict = json.loads(messageStr)
         except json.JSONDecodeError as e:
             logging.error("Error parsing the message: " + str(e))
             return
-        
+                
         # Get the OBU ID from the topic
         try:
             devId: str = int(message.topic.split('/')[-1])
@@ -113,13 +116,13 @@ class MQTT:
             return
 
         # Check if the message has the required fields
-        if 'type' not in payload or payload['type'] != 'GPS' or payload['type'] != 'GREETING':
+        if not check_dict_fields(payload, ['type']) or (payload['type'] != 'GPS' and payload['type'] != 'GREETING'):
             logging.error("Received a message without/invalid message type")
             return
 
         # Process a GREETING/init message
         if payload['type'] == 'GREETING':
-            if 'device' not in payload or 'id' not in payload or 'status' not in payload or 'mac' not in payload or 'ip' not in payload:
+            if not check_dict_fields(payload, ['device', 'id', 'status', 'mac', 'ip']):
                 logging.error("Received a greeting message without the required fields")
                 return
             device: Device = Device(
@@ -129,11 +132,14 @@ class MQTT:
                                     payload['mac'], 
                                     payload['ip']
                                     )
+            device.configure_device()
             self.devices[devId] = device
+            logging.debug("Received GREETING message from OBU: " + str(devId) + " with device: " + str(device))
+            
             
         # Process a GPS message
         elif payload['type'] == 'GPS':
-            if 'latitude' not in payload or 'longitude' not in payload or 'elevation' not in payload or 'timestamp' not in payload:
+            if not check_dict_fields(payload, ['latitude', 'longitude', 'elevation', 'timestamp']):
                 logging.error("Received a gps message without the required fields")
                 return
             
@@ -147,7 +153,8 @@ class MQTT:
             # Check if the OBU is already in the dictionary
             if devId in self.devices.keys():
                 # Update the location
-                self.obuLocations[devId] = location
+                self.locations[devId] = location
+                logging.debug("Received GPS message from OBU: " + str(devId) + " with location: " + str(location))
             else:
                 logging.error("Received a GPS message from an unknown OBU")
         

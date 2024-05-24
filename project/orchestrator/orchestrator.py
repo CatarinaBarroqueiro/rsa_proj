@@ -98,8 +98,8 @@ if __name__ == "__main__":
         lifecycle(mqtt)
     except KeyboardInterrupt:
         logging.info("Orchestrator lifecycle interrupted")
-    except Exception as e:
-        logging.error("An error occurred: " + str(e))
+    #except Exception as e:
+    #    logging.error("An error occurred: " + str(e))
     
     logging.info("Orchestrator lifecycle complete")
 
