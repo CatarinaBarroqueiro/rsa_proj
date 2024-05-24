@@ -23,9 +23,12 @@ def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     #    return
 
     #connectedDevices.append([device1.deviceID, device2.deviceID])
+    logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are connected")
+    if device1.mac not in device2.blockedMac or device2.mac not in device1.blockedMac:
+        return
+    
     device1.unblock_device(device2.mac)
     device2.unblock_device(device1.mac)
-    logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are connected")
 
 
 def block_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
@@ -36,9 +39,12 @@ def block_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
         - device1: The first device
         - device2: The second device
     """
+    logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are blocked")
+    if device1.mac in device2.blockedMac or device2.mac in device1.blockedMac:
+        return
+    
     device1.block_device(device2.mac)
     device2.block_device(device1.mac)
-    logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are blocked")
 
 
 def lifecycle(mqtt: MQTT) -> None:

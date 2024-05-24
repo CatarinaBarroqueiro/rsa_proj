@@ -3,6 +3,7 @@
 """
 import logging
 import json
+from math import log
 import os
 
 class Device:
@@ -63,19 +64,27 @@ class Device:
         }
         return json.dumps(data)
 
-    def configure_device(self) -> None:
+    def configure_device(self) -> bool:
         """
         Configure the device
+        Returns:
+            - True if the device is successfully configured, False otherwise
         """
-        logging.info("Configuring device: " + str(self.deviceID))
         if self.deviceType == "OBU":
-            os.system(f'docker exec --privileged fleeta-obu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')
-            return True
+            ret = os.system(f'docker exec --privileged fleeta-obu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')
         elif self.deviceType == "RSU":
-            os.system(f'docker exec --privileged fleeta-rsu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')
+            ret = os.system(f'docker exec --privileged fleeta-rsu_{self.deviceID} /bin/bash -c "sh configBridge.sh"')  
+        else:
+            logging.error("Invalid device type")
+            return False
+        
+        if ret == 0:
+            logging.debug(f"Configured Bridge of {self.deviceType}: {self.deviceID}")
             return True
         else:
+            logging.error(f"Error configuring Bridge of {self.deviceType}: {self.deviceID}")
             return False
+
 
     def block_device(self, macToBlock: str) -> bool:
         """
@@ -86,17 +95,23 @@ class Device:
             - True if the device is blocked, False otherwise
         """
         if macToBlock in self.blockedMac:
+            logging.error("Device is already blocked")
             return False
         
         if self.deviceType == "OBU":
-            print(os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} block {macToBlock}"))
-            self.blockedMac.append(macToBlock)
-            return True
+            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} block {macToBlock}")
         elif self.deviceType == "RSU":
-            os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} block {macToBlock}")
+            ret = os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} block {macToBlock}")
+        else:
+            logging.error("Invalid device type")
+            return False
+        
+        if ret == 0:
+            logging.debug(f"The {self.deviceType}_{self.deviceID} has blocked the device with MAC: {macToBlock}")
             self.blockedMac.append(macToBlock)
             return True
         else:
+            logging.error(f"Error occurred while blocking the device with MAC: {macToBlock} on {self.deviceType}_{self.deviceID}")
             return False
         
     def unblock_device(self, macToUnblock: str) -> bool:
@@ -119,4 +134,20 @@ class Device:
             self.blockedMac.remove(macToUnblock)
             return True
         else:
+            return False
+        
+        if self.deviceType == "OBU":
+            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToBlock}")
+        elif self.deviceType == "RSU":
+            ret = os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToBlock}")
+        else:
+            logging.error("Invalid device type")
+            return False
+        
+        if ret == 0:
+            logging.debug(f"The {self.deviceType}_{self.deviceID} has unblocked the device with MAC: {macToBlock}")
+            self.blockedMac.append(macToBlock)
+            return True
+        else:
+            logging.error(f"Error occurred while unblocking the device with MAC: {macToBlock} on {self.deviceType}_{self.deviceID}")
             return False
