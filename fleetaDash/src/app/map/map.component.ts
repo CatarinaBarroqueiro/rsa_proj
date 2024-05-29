@@ -29,10 +29,21 @@ export class MapComponent implements OnInit, AfterViewInit {
     [40.6427, -8.6481], // Car Location
   ];
   
+  private svgWarnIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 48">
+    <path fill="#ffb700" d="M23.99 4L4 44h40L23.99 4zm-2 32h4v4h-4v-4zm0-8h4v8h-4v-8z"/>
+    <path d="M0 0h48v48H0z" fill="none"/>
+  </svg>
+  `;
 
-  // SVG data for the red pin icon
+  private svginfoIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+  <image href="assets/info-circle.svg" width="30" height="30" />
+</svg>
+`;
+
   private svgPinIcon = `
-    <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="30" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.777 12.5 28.5 12.5 28.5S25 22.277 25 12.5C25 5.596 19.404 0 12.5 0zM12.5 18.75c-3.45 0-6.25-2.8-6.25-6.25s2.8-6.25 6.25-6.25 6.25 2.8 6.25 6.25-2.8 6.25-6.25 6.25z" fill="#FF0000"/>
     </svg>
   `;
@@ -90,6 +101,8 @@ export class MapComponent implements OnInit, AfterViewInit {
     { coords: [40.6374, -8.6415] as L.LatLngTuple, label: 'Train Station', type: 'location' },
     { coords: [40.6423, -8.6267] as L.LatLngTuple, label: 'Shopping Center', type: 'location' },
     { coords: [40.6427, -8.6481] as L.LatLngTuple, label: 'Car A', type: 'car' },
+    { coords: [40.6458, -8.6563] as L.LatLngTuple, label: 'Speed', type: 'speed' },
+    { coords: [40.6361, -8.6443] as L.LatLngTuple, label: 'Accident', type: 'warn' },
     { coords: [40.6300, -8.6481] as L.LatLngTuple, label: 'Car B', type: 'car' },
     { coords: [40.6350, -8.6581] as L.LatLngTuple, label: 'Car C', type: 'car' }
   ];
@@ -104,31 +117,46 @@ export class MapComponent implements OnInit, AfterViewInit {
   
 
   private createCustomIcon(label: string, type: string): L.DivIcon {
-    const iconSvg = type === 'car' ? this.svgCarIcon : this.svgPinIcon;
-    let backgroundColor = 'rgba(255, 255, 255, 0.8)'; // Default background color
-
-    // Check if the car label is part of any connected pair
+    let iconSvg: string;
+  
+    switch (type) {
+      case 'car':
+        iconSvg = this.svgCarIcon;
+        break;
+      case 'warn':
+        iconSvg = this.svgWarnIcon;
+        break;
+      case 'speed':
+        iconSvg = this.svginfoIcon; // Using svginfoIcon for the 'speed' type
+        break;
+      default:
+        iconSvg = this.svgPinIcon;
+    }
+  
+    let backgroundColor = 'rgba(255, 255, 255, 0.8)'; 
+  
     for (const pair of this.connections) {
       if (pair.includes(label)) {
-        // If connected, change the background color to green
-        backgroundColor = 'rgba(0, 255, 0, 0.8)'; // Green background for connected cars
-        break; // Exit loop once the connection is found
+        backgroundColor = 'rgba(0, 255, 0, 0.8)';
+        break; 
       }
     }
-
+  
     return new L.DivIcon({
-      html: `<div style="text-align: center;">
-                <div style="font-size: 14px; font-weight: bold; background: ${backgroundColor}; padding: 8px 12px; margin: 10px; border-radius: 6px; display: inline-block;">
-                ${label}
-                </div>
-                ${iconSvg}
-             </div>`,
+      html: `<div style="display: flex; flex-direction: column; align-items: center;">
+        ${iconSvg}
+        <div style="font-size: 9px; font-weight: bold; background: ${backgroundColor}; padding: 8px 12px; margin: 10px; border-radius: 6px; align-text:center;">
+          ${label}
+        </div>
+      </div>
+      `,
       className: '', 
       iconSize: type === 'car' ? [25, 25] : [25, 41], 
       iconAnchor: type === 'car' ? [12.5, 12.5] : [12.5, 41], 
       popupAnchor: [1, -34], 
     });
   }
+  
 
   markers: L.Marker[] = [];
 
@@ -169,19 +197,16 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   public showCarRoute() {
-    // Check if the route polyline already exists on the map
     const existingRoute = this.routePolyline && this.map.hasLayer(this.routePolyline);
   
-    // If the route exists, remove it from the map
     if (existingRoute) {
       this.map.removeLayer(this.routePolyline!);
-      this.routePolyline = undefined; // Reset the route polyline
-      return; // Exit the function
+      this.routePolyline = undefined; 
+      return; 
     }
   
-    // If the route does not exist, add it to the map
     if (this.carRoute.length > 0) {
-      this.routePolyline = L.polyline(this.carRoute, { color: 'blue' }).addTo(this.map);
+      this.routePolyline = L.polyline(this.carRoute, { color: '#800020' }).addTo(this.map);
       this.map.fitBounds(this.routePolyline.getBounds());
     }
   }
