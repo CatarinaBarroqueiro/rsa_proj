@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [ TypeOrmModule.forRoot({
@@ -14,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     entities: [],
     synchronize: true,
     autoLoadEntities: true,
-  })],
+  }), HistoryModule],
   controllers: [AppController],
   providers: [AppService],
 })
