@@ -1,0 +1,13 @@
+<div class="side-nav">
+  <div class="side-nav-header">
+    <img src="assets/1.png" alt="Logo" class="company-logo2">
+    <button (click)="onClose()">Close</button>
+  </div>
+  <h1> 
+    <span>{{ item.label }}</span>
+  </h1>    
+  <div class="side-nav-content">
+    <p>Type: {{ item.type }}</p>
+    <button *ngIf="item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
+  </div>
+</div>

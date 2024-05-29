@@ -1,0 +1,52 @@
+.side-nav {
+    font-family: Arial, sans-serif;
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 300px;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  .side-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .company-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+  
+  .side-nav-header span {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .side-nav-header button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .side-nav-content {
+    font-size: 18px;
+    color: #333;
+  }
+  
+
+  .company-logo2 {
+    height: 150px;
+    width: auto; 
+    vertical-align: middle; 
+  }
