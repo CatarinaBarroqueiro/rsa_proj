@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HistoryModule } from './history/history.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [ TypeOrmModule.forRoot({
@@ -15,7 +16,7 @@ import { HistoryModule } from './history/history.module';
     entities: [],
     synchronize: true,
     autoLoadEntities: true,
-  }), HistoryModule],
+  }), HistoryModule, RealtimeModule],
   controllers: [AppController],
   providers: [AppService],
 })
