@@ -8,6 +8,7 @@ import time
 import re, uuid
 from GPS import GPS, Location
 from MQTT import MQTT
+from Event import Event, EVENTS
 import logging
 
 
@@ -20,7 +21,7 @@ def get_mac() -> str:
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
 
 
-def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str) -> None:
+def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler: Event) -> None:
     """
     The lifecycle of the OBU
     Args:
@@ -45,6 +46,11 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str) -> None:
     while True:
         location = gps.get_location()
         mqtt.publish(location.json_to_str())
+        event = eventHandler.get_event()
+        if(event == None):
+            logging.info("No event generated")
+        else:
+            logging.info("Event generated: " + event.value)
         sleep(frequency)
 
 if __name__ == "__main__":
@@ -78,7 +84,7 @@ if __name__ == "__main__":
     
     logging.info("Starting OBU lifecycle")
     try:
-        lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'])
+        lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'], Event(int(os.environ['EVENT_PROBABILITY'])))
     except ConnectionError as e:
         logging.error("Failed to publish GPS data: " + str(e))
     except KeyboardInterrupt:
