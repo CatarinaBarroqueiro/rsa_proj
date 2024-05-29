@@ -1,15 +1,21 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import * as L from 'leaflet';
+import { SideNavComponent } from '../side-nav/side-nav.component';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-real-time',
   standalone: true,
-  imports: [],
+  imports: [SideNavComponent, CommonModule],
   templateUrl: './real-time.component.html',
   styleUrl: './real-time.component.css'
 })
 export class RealTimeComponent {
+
+    public selectedItem: any;
+    public sideNavOpen = false;
+
 
     // SVG data for the car icon
     private svgCarIcon = `
@@ -127,20 +133,19 @@ export class RealTimeComponent {
       const marker = L.marker(data.coords, { icon: this.createCustomIcon(data.label, data.type) });
       marker.addTo(this.map);
 
-      // marker.on('click', () => {
-      //   this.selectedItem = data;
-      //   this.toggleSideNav(true);
-      //   if (data.type === 'car') {
-      //     this.showRouteButton = true; // Show the "Show Route" button in the navbar
-      //   } else {
-      //     this.showRouteButton = false; // Hide the button for other markers
-      //   }
-      // });
+      marker.on('click', () => {
+        this.selectedItem = this.connections;
+        this.toggleSideNav(true);
+
+      });
 
       this.markers.push(marker);
     });
   }
 
+  public toggleSideNav(open: boolean) {
+    this.sideNavOpen = open;
+  }
 
   private centerMap() {
     // Create a LatLngBounds object to encompass all the marker locations

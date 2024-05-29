@@ -19,4 +19,8 @@ export class SideNavComponent {
   onShowRouteClicked(): void {
     this.showRouteClicked.emit();
   }
+
+  isConnectionsArray(item: any): boolean {
+    return Array.isArray(item) && item.length > 0 && item[0].length === 2;
+  }
 }

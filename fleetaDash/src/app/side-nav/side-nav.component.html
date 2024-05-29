@@ -7,7 +7,22 @@
     <span>{{ item.label }}</span>
   </h1>    
   <div class="side-nav-content">
-    <p>Type: {{ item.type }}</p>
-    <button *ngIf="item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
+    <ng-container *ngIf="item && item.length && item[0].length === 2">
+      <table class="connections-table">
+        <thead>
+          <tr>
+            <th colspan="2">Connections</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let connection of item">
+            <td>{{ connection[0] }}</td>
+            <td>{{ connection[1] }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>    
+    <!-- Show route button if the item is not a connections array -->
+    <button class="show-route-button" *ngIf="!isConnectionsArray(item) && item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
   </div>
 </div>

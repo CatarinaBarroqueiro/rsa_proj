@@ -42,6 +42,9 @@
   .side-nav-content {
     font-size: 18px;
     color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   
 
@@ -50,3 +53,40 @@
     width: auto; 
     vertical-align: middle; 
   }
+
+  .show-route-button {
+    color: white;
+    background-color: #b30000; 
+    border: 2px solid #b30000;
+    padding: 8px 16px; 
+    border-radius: 4px;
+    cursor: pointer; 
+  }
+  
+  .show-route-button:hover {
+    background-color: #800000; 
+    border-color: #800000;
+  }
+  
+  
+  .connections-table {
+    border-collapse: collapse;
+    margin-top: 20px;
+    width: 100%;
+    border-radius: 5%;
+  }
+  
+  .connections-table th, .connections-table td, .connections-table tr {
+    border: 1px solid #75050593;
+    padding: 8px;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .connections-table th {
+    background-color: #7d07079e;
+    color: white;
+
+  }
+
+  
