@@ -1,3 +1,4 @@
+<!-- app.component.html -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6,7 +7,7 @@
 <body>
   <div class="top-bar">
     <img src="assets/2.png" alt="Logo" class="company-logo">
-    <div class="dropdown">
+    <div *ngIf="showMenu" class="dropdown">
       <button class="dropbtn">MENU</button>
       <div class="dropdown-content">
         <a (click)="changeRoute('/')">Main</a>

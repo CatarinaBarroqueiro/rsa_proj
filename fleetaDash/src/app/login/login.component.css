@@ -1,0 +1,64 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh; /* Full height of the viewport */
+    background-image: url('../../assets/background.svg'); /* Adjust the path accordingly */
+    background-size: cover; /* Cover the entire container */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Do not repeat the background image */
+  }
+  
+  .login-form {
+    font-family: Arial, sans-serif;
+    width: 300px; /* Adjust width as needed */
+    background-color: #800020; /* Bordeaux background color */
+    padding: 40px; /* Add padding for better appearance */
+    border-radius: 10px; /* Rounded corners */
+    text-align: center; /* Center the text inside the form */
+  }
+  
+  .login-form h1 {
+    margin-bottom: 20px; /* Add margin below the heading */
+  }
+  
+  .login-form div {
+    margin-bottom: 10px; /* Add spacing between input fields */
+  }
+  
+  .login-form label {
+    color: white; /* White label text color */
+  }
+  
+  .login-form input[type="email"],
+  .login-form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 10px; /* Add margin between input fields and button */
+  }
+  
+  .login-form button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: white; /* White button background color */
+    color: black; /* Black button text color */
+    cursor: pointer;
+  }
+  
+  .login-form button:hover {
+    background-color: #fff0f5; /* Lighter shade on hover */
+  }
+  
