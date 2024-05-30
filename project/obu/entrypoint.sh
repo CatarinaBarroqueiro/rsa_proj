@@ -24,5 +24,9 @@ export IP_ADDR
 echo "Starting OBU_$OBU_ID application"
 cd ./src
 python3 -u obu.py # Use -u to disable buffering and prints to appear in console
-echo "OBU application ended"
+
+echo "Starting OrbitDB application"
+
+cd ../orbit
+#node index.mjs
 
