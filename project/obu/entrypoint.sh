@@ -25,9 +25,8 @@ echo "Starting OBU_$OBU_ID application"
 cd ./src
 python3 -u obu.py & # Use -u to disable buffering and prints to appear in console
 
-echo "Starting OrbitDB application"
-
 cd ../orbit
+echo "Starting OBU OrbitDB application"
 
 # Source the nvm script to make nvm and node available
 export NVM_DIR="/root/.nvm"

@@ -55,7 +55,7 @@ class MQTT:
         self.client.loop_start()
         
         # Remove the last / and add + to subscribe to all topics
-        parts = self.initTopic.split("/")
+        parts: list[str] = self.initTopic.split("/")
         # Modify the last element
         parts[-1] = "+"
         # Join the modified parts back with '/'

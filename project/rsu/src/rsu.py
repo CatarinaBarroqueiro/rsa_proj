@@ -10,7 +10,7 @@ import time
 import re, uuid
 from MQTT import MQTT
 import logging
-
+import requests
 
 def get_mac() -> str:
     """
@@ -19,6 +19,37 @@ def get_mac() -> str:
         - The MAC address of the OBU
     """
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
+
+
+def add_hashes_to_orbitdb(hashes: dict[str, str]):
+    """
+    Add the hashes of the devices to the OrbitDB
+    Args:
+        - hashes: The dictionary containing the hashes of the devices
+    """
+    for obuId, hash in hashes.items():
+        if obuId == os.environ['RSU_ID']:
+            continue
+
+        url = "http://localhost:" + os.environ['PYTHON_NODE_API_PORT'] + "/addHash"
+        payload = {
+            "id": obuId,
+            "hash": hash
+        }
+
+        jsonPayload = json.dumps(payload)
+        logging.debug("Sending data to orbit: " + jsonPayload)
+
+        headers = { "Content-Type": "application/json"}
+    
+        # Send the POST request
+        response = requests.post(url, data=jsonPayload, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            logging.info("Hash POST request was successful!")
+        else:
+            logging.error(f"Failed to make Hash POST request. Status code: {response.status_code}, Response: {response.json()}")
 
 
 def lifecycle(mqtt: MQTT, ipAddress: str) -> None:
@@ -46,6 +77,9 @@ def lifecycle(mqtt: MQTT, ipAddress: str) -> None:
     # Wait for the order to start the simulation from the controller
     mqtt.wait_for_start()
 
+    # Add the hashes of the devices to the OrbitDB
+    add_hashes_to_orbitdb(mqtt.devicesHash)
+
     # Publish the location data to the MQTT broker
     location: dict = {
         "type": "GPS",
@@ -55,6 +89,7 @@ def lifecycle(mqtt: MQTT, ipAddress: str) -> None:
         "timestamp": str(datetime.datetime.now())
     }
     mqtt.publish(mqtt.gpsTopic, json.dumps(location))
+    
     
     # do nothing, just to let the OrbitDB program running
     while True:

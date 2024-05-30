@@ -23,6 +23,14 @@ export IP_ADDR
 
 echo "Starting RSU_$OBU_ID application"
 cd ./src
-python3 -u rsu.py # Use -u to disable buffering and prints to appear in console
-echo "rsu application ended"
+python3 -u rsu.py & # Use -u to disable buffering and prints to appear in console
+
+cd ../orbit
+echo "Starting RSU OrbitDB application"
+
+# Source the nvm script to make nvm and node available
+export NVM_DIR="/root/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+node index.mjs
 
