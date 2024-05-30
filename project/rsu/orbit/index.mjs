@@ -18,7 +18,7 @@ import express from "express";
 */
 // Dictionary to store remote OrbitDB databases
 const remoteOrbitdbs = {};
-const remoteHashes = {};
+const remoteDatabases = {};
 const remoteLastSeq = {};
 
 // Set up libp2p and IPFS
@@ -76,20 +76,14 @@ app.post("/addHash", async (req, res) => {
   try {
     // Connect to the remote OrbitDB database using the provided hash
     let remoteOrbitdb = await setupOrbitDB(id);
-    let remoteDB = await remoteOrbitdb.open(hash)
+    let remoteDB = await remoteOrbitdb.open(hash);
     remoteOrbitdbs[id] = remoteOrbitdb;
-    remoteHashes[id] = hash;
-    remoteLastSeq[id] = 0;
+    remoteDatabases[id] = remoteDB;
+    remoteLastSeq[id] = 0; // Initialize the last known sequence number
 
-    //const putHash = await remoteDB.put('rsu', 'hey')
     // Print the content of the database after each message
-    //console.log(`[Orbit] Current content of remote database ${id}:`);
-    //console.log(await remoteDB.all());
-
-    // wait 1 second
-    //await new Promise(resolve => setTimeout(resolve, 1000));
-
-    await remoteDB.close()
+    console.log(`Current content of remote database ${id}:`);
+    console.log(await remoteDB.all());
 
     console.log(`[Orbit] Connected to remote OrbitDB with ID ${id}`);
     res.json({ success: true });
@@ -99,29 +93,26 @@ app.post("/addHash", async (req, res) => {
   }
 });
 
+
 // Function to check and print new records every 5 seconds
 const checkAndPrintUpdates = async () => {
-  // Print the number of records in remoteHashes
-  console.log(`[Orbit] Number of remote databases: ${Object.keys(remoteHashes).length}`);
+  // Print the number of records in remoteDatabases
+  console.log(`[Orbit] Number of remote databases: ${Object.keys(remoteDatabases).length}`);
 
-  for (const [id, hash] of Object.entries(remoteHashes)) {
-    try{ 
-      let remoteOrbitdb = await remoteOrbitdbs[id];
-      let remoteDB = await remoteOrbitdb.open(hash);
-
+  for (const [id, db] of Object.entries(remoteDatabases)) {
+    try { 
       // wait 1 second
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log(`[Orbit] Current content of remote database ${id} with hash ${hash}:`);
-      console.log(await remoteDB.all());
-      
-      await remoteDB.close()
+      console.log(`[Orbit] Current content of remote database ${id}:`);
+      console.log(await db.all());
+
     } catch (error) {
-      console.error(`[Orbit] Error connecting to remote OrbitDB: ${error.message}`);
-      await remoteDB.close()
+      console.error(`[Orbit] Error accessing remote OrbitDB ${id}: ${error.message}`);
     }
   }
 };
+
 
 // Start checking for updates every 5 seconds
 setInterval(checkAndPrintUpdates, 5000);
