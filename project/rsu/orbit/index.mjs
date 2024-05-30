@@ -83,11 +83,11 @@ app.post("/addHash", async (req, res) => {
 
     //const putHash = await remoteDB.put('rsu', 'hey')
     // Print the content of the database after each message
-    console.log(`[Orbit] Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
+    //console.log(`[Orbit] Current content of remote database ${id}:`);
+    //console.log(await remoteDB.all());
 
     // wait 1 second
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    //await new Promise(resolve => setTimeout(resolve, 1000));
 
     await remoteDB.close()
 
@@ -101,17 +101,25 @@ app.post("/addHash", async (req, res) => {
 
 // Function to check and print new records every 5 seconds
 const checkAndPrintUpdates = async () => {
+  // Print the number of records in remoteHashes
+  console.log(`[Orbit] Number of remote databases: ${Object.keys(remoteHashes).length}`);
+
   for (const [id, hash] of Object.entries(remoteHashes)) {
-    let remoteOrbitdb = await remoteOrbitdbs[id];
-    let remoteDB = await remoteOrbitdb.open(hash);
+    try{ 
+      let remoteOrbitdb = await remoteOrbitdbs[id];
+      let remoteDB = await remoteOrbitdb.open(hash);
 
-    // wait 1 second
-    await new Promise(resolve => setTimeout(resolve, 2000));
+      // wait 1 second
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    console.log(`[Orbit] Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
-    
-    await remoteDB.close()
+      console.log(`[Orbit] Current content of remote database ${id} with hash ${hash}:`);
+      console.log(await remoteDB.all());
+      
+      await remoteDB.close()
+    } catch (error) {
+      console.error(`[Orbit] Error connecting to remote OrbitDB: ${error.message}`);
+      await remoteDB.close()
+    }
   }
 };
 

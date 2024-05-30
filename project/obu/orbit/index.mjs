@@ -101,7 +101,7 @@ app.post("/addHash", async (req, res) => {
     //console.log(await remoteDB.all());
 
     // wait 1 second
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    //await new Promise(resolve => setTimeout(resolve, 1000));
 
     await remoteDB.close()
 
@@ -141,16 +141,20 @@ app.post("/addData", async (req, res) => {
 // Function to open and close the remote database
 const checkAndPrintUpdates = async () => {
   for (const [id, hash] of Object.entries(remoteHashes)) {
-    let remoteOrbitdb = await remoteOrbitdbs[id];
-    let remoteDB = await remoteOrbitdb.open(hash);
+    try{
+      let remoteOrbitdb = await remoteOrbitdbs[id];
+      let remoteDB = await remoteOrbitdb.open(hash);
 
-    // wait 1 second
-    await new Promise(resolve => setTimeout(resolve, 2000));
+      // wait 1 second
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    console.log(`[Orbit] Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
-    
-    await remoteDB.close()
+      //console.log(`[Orbit] Current content of remote database ${id} with ${hash}:`);
+      //console.log(await remoteDB.all());
+      
+      await remoteDB.close()
+    } catch (error) {
+      console.error(`[Orbit] Error connecting to remote OrbitDB: ${error.message}`);
+    }
   }
 };
 
