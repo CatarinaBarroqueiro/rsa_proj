@@ -87,9 +87,9 @@ services:
       fleeta-network:
           ipv4_address: 192.168.98.13
 
-  fleeta-rsu_1:
+  fleeta-rsu_100:
     image: fleeta-rsu:1.0
-    container_name: fleeta-rsu_1
+    container_name: fleeta-rsu_100
     environment:
       - RSU_ID=100
       - MQTT_BROKER_HOST=fleeta-mqtt-broker #192.168.98.10

@@ -30,7 +30,17 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
         - mqtt: The MQTT client
         - gps: The GPS object
         - frequency: The frequency of sending the GPS data
-    """  
+    """ 
+    # Wait for OrbitDB to create the hash of our database
+    logging.info("Waiting for OrbitDB to create the database: ")
+    fileName: str = "./../orbit/storage/hash/" + os.environ['OBU_ID'] + "/hash.txt"
+    while not os.path.exists(fileName):
+        sleep(1)
+        print(".", end="", flush=True)
+
+    with open(fileName, "r") as file:
+        myDbHash = file.read()
+
     # Create greating message
     msg: dict = {
         "type": "GREETING",

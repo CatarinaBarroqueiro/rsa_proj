@@ -23,8 +23,12 @@ import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 import { noise } from "@chainsafe/libp2p-noise";
 import { LevelBlockstore } from "blockstore-level";
 import fs from "fs";
-import readline from "readline";
 
+/*
+  #####################################
+  ## Initiating the OrbitDB instance ##
+  #####################################
+*/
 // Set up libp2p and IPFS
 const libp2pOptions = {
   peerDiscovery: [mdns()],
@@ -40,33 +44,12 @@ const libp2pOptions = {
   },
 };
 
-// Create the terminal reader interface
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-// only supports creation of database or connecting to one remote database
-const id = process.argv.length > 2 ? 2 : 1;
-
-// Generate a new id for the peer, based on the directory name of the previous peer
-//const getNewId = (currentId) => {
-//  let newId = currentId;
-//  if (process.argv.length > 2) {
-//    while (fs.existsSync(`./storage/orbitdb/${newId}`)) {
-//      newId += 1;
-//    }
-//  }
-//  return newId;
-//};
-
 // Get the environment variable for the peer id
-//const _newId = getNewId(id);
-const _newId = process.env.OBU_ID;
+const obuId = process.env.OBU_ID;
 
-console.log(`I'm peer: ${_newId}`);
+console.log(`I'm obu_${obuId}`);
 
-const blockstore = new LevelBlockstore(`./storage/ipfs/${_newId}`);
+const blockstore = new LevelBlockstore(`./storage/ipfs/${obuId}`);
 
 const libp2p = await createLibp2p(libp2pOptions);
 
@@ -74,64 +57,41 @@ const ipfs = await createHelia({ libp2p, blockstore });
 
 const orbitdb = await createOrbitDB({
   ipfs,
-  id: `nodejs-${_newId}`,
-  directory: `./storage/orbitdb/${_newId}`,
+  id: `nodejs-${obuId}`,
+  directory: `./storage/orbitdb/${obuId}`,
 });
 
-let db;
+// Create a key-value pair database
+const dbName = `obu_${obuId}`;
+let db = await orbitdb.open(dbName, {
+  create: true,
+  type: "keyvalue",
+  AccessController: OrbitDBAccessController({ write: ["*"] }),
+  replicate: true,
+});
 
-const askQuestion = (_newId) => {
-  // Ask the user to input messages
-  rl.question("Type a key: ", (key) => {
-    rl.question("Type a value: ", async (value) => {
-      await db.put(key, value);
+// create a file named hash with the db address inside
+fs.mkdirSync(`./storage/hash/${obuId}`, { recursive: true });
+fs.writeFileSync(`./storage/hash/${obuId}/hash.txt`, db.address.toString());
 
-      if (key === "exit" || value === "exit") {
-        // Close the readline interface and end the process
-        rl.close();
-        await db.close();
-        await orbitdb.stop();
-        await ipfs.stop();
-        process.exit(0);
-      } else {
-        // Print the content of the database after each entry
-        console.log("Current database content:");
-        console.log(await db.all());
+console.log(`My database name is ${dbName} and address: ${db.address.toString()}`);
 
-        askQuestion(_newId);
-      }
-    });
-  });
-};
+// Add a record to the database
+const hash = await db.put('key', 'value')
 
-const printDB = async () => {
-  console.log("Current database content:");
-  console.log(await db.all());
-}
+/*
+  ############################################################
+  ## Setting up the API server for connectivity with Python ##
+  ############################################################
+*/
 
-// Connect to a remote database if an address is provided
-if (process.argv.length > 2) {
-  const remoteDBAddress = process.argv.pop();
-  db = await orbitdb.open(remoteDBAddress, { type: "keyvalue" });
 
-  // call the printDB function every 10 seconds
-  setInterval(printDB, 10000);
 
-// Create a new database if no address is provided
-} else {
-  const dbName = `obu_${_newId}`;
-  db = await orbitdb.open(dbName, {
-    create: true,
-    type: "keyvalue",
-    AccessController: OrbitDBAccessController({ write: ["*"] }),
-    replicate: true,
-  });
-
-  console.log(`Your database name: ${dbName}, address: ${db.address.toString()}`);
-
-  askQuestion(_newId);
-}
-
+/*
+  ##########################################
+  ## End of life for the OrbitDB instance ##
+  ##########################################
+*/
 process.on("SIGINT", async () => {
   console.log("exiting...");
 
