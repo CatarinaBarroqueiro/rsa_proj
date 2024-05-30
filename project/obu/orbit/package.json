@@ -7,6 +7,7 @@
     "@multiformats/multiaddr": "^12.2.3",
     "@orbitdb/core": "^2.2.0",
     "blockstore-level": "^1.1.8",
+    "express": "^4.19.2",
     "helia": "^4.2.3",
     "it-drain": "^3.0.7",
     "libp2p-kad-dht": "^0.28.6"
