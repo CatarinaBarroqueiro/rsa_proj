@@ -39,6 +39,8 @@
       </label>
     </div>
         <br>
+        <button class="show-route-button" *ngIf="!isConnectionsArray(item) " (click)="onShowRouteClicked()">Show Route</button>
+
     <button class="show-route-button" *ngIf="!isConnectionsArray(item) && item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
   </div>
 </div>

@@ -23,16 +23,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   public sideNavOpen = false;
   public selectedItem: any;
 
-  private carRoute: L.LatLngTuple[] = [
-    [40.6306, -8.6571], // University of Aveiro
-    [40.6342, -8.6401], // Municipal Market
-    [40.6400, -8.6468], // Forum Aveiro
-    [40.6458, -8.6563], // Aveiro Marina
-    [40.6404, -8.6527], // Ria de Aveiro
-    [40.6389, -8.6396], // Aveiro Cathedral
-    [40.6361, -8.6443], // Aveiro Museum
-    [40.6427, -8.6481], // Car Location
-  ];
+  private carRoute: L.LatLngTuple[] = [];
   
   private svgWarnIcon = `
   <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 48">
@@ -106,7 +97,7 @@ private svgRSUicon = `
   `;
 
   
-  private markerData = [];
+  private markerData : MarkerData[] = [];
 
   private connections: string[][] = [
     ['Car A', 'Car C']
@@ -121,6 +112,16 @@ private svgRSUicon = `
   
 
   private createCustomIcon(label: string, type: string): L.DivIcon {
+    // Convert label to an integer
+    const labelNumber = parseInt(label);
+  
+    // Determine type based on labelNumber
+    if (labelNumber > 100) {
+      type = 'rsu';
+    } else {
+      type = 'car';
+    }
+  
     let iconSvg: string;
   
     switch (type) {
@@ -164,6 +165,7 @@ private svgRSUicon = `
     });
   }
   
+  
 
   markers: L.Marker[] = [];
 
@@ -188,7 +190,19 @@ private svgRSUicon = `
       console.log('HTTP Response:', response); // Log the HTTP response
       
       if (response.data) {
-        this.markerData = response.data.map((item: { latitude: string; longitude: string; obu: any; event: any; }) => {
+        // Create a map to store the latest marker data for each OBU
+        const markerMap = new Map<number, any>();
+  
+        // Iterate through the response data to filter duplicates
+        response.data.forEach((item: any) => {
+          const obuId = parseInt(item.obu);
+          if (!markerMap.has(obuId) || markerMap.get(obuId).id < item.id) {
+            markerMap.set(obuId, item);
+          }
+        });
+  
+        // Map the filtered marker data to the final markerData array
+        this.markerData = Array.from(markerMap.values()).map((item: any) => {
           const coords: L.LatLngTuple = [parseFloat(item.latitude), parseFloat(item.longitude)];
           console.log('Parsed Coordinates:', coords); // Log the parsed coordinates
           
@@ -209,6 +223,7 @@ private svgRSUicon = `
       }
     });
   }
+  
 
   
   private addMarkers() {
@@ -227,20 +242,45 @@ private svgRSUicon = `
     });
   }
 
-  public showCarRoute() {
+  public async showCarRoute() {
     const existingRoute = this.routePolyline && this.map.hasLayer(this.routePolyline);
-  
+    console.log("HEY" + this.selectedItem.label);
+
     if (existingRoute) {
+      // If the route polyline exists, remove it from the map
       this.map.removeLayer(this.routePolyline!);
-      this.routePolyline = undefined; 
-      return; 
+      this.routePolyline = undefined;
+      this.carRoute = []; // Clear the carRoute array
+      return; // Exit the function
     }
   
-    if (this.carRoute.length > 0) {
-      this.routePolyline = L.polyline(this.carRoute, { color: '#800020' }).addTo(this.map);
-      this.map.fitBounds(this.routePolyline.getBounds());
+    try {
+      // Make the HTTP request to fetch the data
+      const response = await fetch('http://localhost:3000/history/obu?obu='+this.selectedItem.label);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      
+      const apiResponse = await response.json();
+      
+      // Parse the API response to extract latitude and longitude values
+      const coordinates: L.LatLngTuple[] = apiResponse.map((data: { latitude: string; longitude: string; }) => [parseFloat(data.latitude), parseFloat(data.longitude)]);
+      
+      // Update the carRoute array with the coordinates from the API response
+      this.carRoute = coordinates.slice(0, 10); // Limit to a maximum of 10 values
+      
+      if (this.carRoute.length > 0) {
+        // Draw the route polyline on the map
+        this.routePolyline = L.polyline(this.carRoute, { color: '#800020' }).addTo(this.map);
+        this.map.fitBounds(this.routePolyline.getBounds());
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   }
+  
+
 
   public showFilter() {
     this.showFilterFlag=!this.showFilterFlag;
