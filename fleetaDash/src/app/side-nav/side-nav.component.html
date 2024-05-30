@@ -8,10 +8,11 @@
   </h1>    
   <div class="side-nav-content">
     <ng-container *ngIf="item && item.length && item[0].length === 2">
+        <H1>{{ itemReceived.type }} {{ itemReceived.label }}</H1>
       <table class="connections-table">
         <thead>
           <tr>
-            <th colspan="2">Connections</th>
+            <th colspan="2">All Car Connections</th>
           </tr>
         </thead>
         <tbody>
@@ -22,7 +23,15 @@
         </tbody>
       </table>
     </ng-container>    
-    <!-- Show route button if the item is not a connections array -->
+    <br>
+    <div class="toggle-container" *ngIf="!isConnectionsArray(item) && item.type === 'car'">
+      <b><span class="filter-legend">Filter by Car</span></b>
+      <label class="toggle-switch">
+        <input type="checkbox"(click)="onShowFilterClicked()" >
+        <span class="slider"></span>
+      </label>
+    </div>
+        <br>
     <button class="show-route-button" *ngIf="!isConnectionsArray(item) && item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
   </div>
 </div>

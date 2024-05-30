@@ -23,4 +23,11 @@ export class HistoryService {
     async remove(id: string) {
         return await this.repository.delete(id);
     }
+
+    async findObu(obuSearched: string) {
+        return await this.repository.find({
+            loadRelationIds: true,
+            where: { obu: obuSearched }
+        });
+    }
 }

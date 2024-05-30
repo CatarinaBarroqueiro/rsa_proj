@@ -1,2 +1,2 @@
 <div id="map"></div>
-<app-side-nav *ngIf="sideNavOpen" [item]="selectedItem" (close)="toggleSideNav(false)"></app-side-nav>
+<app-side-nav *ngIf="sideNavOpen" [item]="selectedItem" [itemReceived]="obuSend" (close)="toggleSideNav(false)" ></app-side-nav>

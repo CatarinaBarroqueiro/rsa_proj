@@ -16,6 +16,7 @@ import { Subscription, interval } from 'rxjs';
 export class RealTimeComponent {
 
     public selectedItem: any;
+    public obuSend : any;
     public sideNavOpen = false;
 
 
@@ -66,6 +67,11 @@ export class RealTimeComponent {
   </svg>
     `;
 
+    private svgRSUicon = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 50 50">
+      <image href="assets/antena.png" width="50" height="50" />
+    </svg>
+    `;
 
   private map!: L.Map
   markers: L.Marker[] = [
@@ -134,9 +140,14 @@ export class RealTimeComponent {
                 obus.forEach((obu: { obu: string, location: { latitude: number, longitude: number } }) => {
                   const { obu: label, location: { latitude, longitude } } = obu;
                   const coords: L.LatLngTuple = [latitude, longitude];
-                  this.markerData.push({ coords, label, type: 'car' });
+                  let type: string = 'car';
+                  if (!isNaN(Number(obu.obu)) && Number(obu.obu) > 100) {
+                    type = 'rsu';
+                  }
+                  this.markerData.push({ coords, label, type });
                 });
               }
+
     
               // Process connectivity data
               if (connectivity) {
@@ -174,9 +185,7 @@ export class RealTimeComponent {
     this.markers = [];
     this.connections = [];
     this.markerData = [];
-  }
-  
-  
+  }  
 
   private initializeMap() {
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -186,10 +195,17 @@ export class RealTimeComponent {
 
  
   private createCustomIcon(label: string, type: string): L.DivIcon {
-    const iconSvg = this.svgCarIcon;
-    let backgroundColor = 'rgba(255, 255, 255, 0.8)'; // Default background color
-
-    // Check if the car label is part of any connected pair
+    let iconSvg: string;
+    if (type === 'car') {
+      iconSvg = this.svgCarIcon;
+    } else if (type === 'rsu') {
+      iconSvg = this.svgRSUicon;
+    } else {
+      throw new Error(`Unknown type: ${type}`);
+    }
+  
+    let backgroundColor = 'rgba(255, 255, 255, 0.8)'; 
+  
     for (const pair of this.connections) {
       if (pair.includes(label)) {
         // If connected, change the background color to green
@@ -197,20 +213,20 @@ export class RealTimeComponent {
         break; // Exit loop once the connection is found
       }
     }
-
-    return new L.DivIcon({
-      html: `<div style="text-align: center;">
-                <div style="font-size: 14px; font-weight: bold; background: ${backgroundColor}; padding: 8px 12px; margin: 10px; border-radius: 6px; display: inline-block;">
-                ${label}
-                </div>
-                ${iconSvg}
-             </div>`,
-      className: '', 
-      iconSize: type === 'car' ? [25, 25] : [25, 41], 
-      iconAnchor: type === 'car' ? [12.5, 12.5] : [12.5, 41], 
-      popupAnchor: [1, -34], 
+  
+    return L.divIcon({
+      html: `
+        <div style="background-color: ${backgroundColor}; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+          ${iconSvg}
+        </div>
+        <div style="position: absolute; top: 35px; left: -15px; width: 60px; text-align: center; font-size: 12px;">
+         <b> ${label} </b>
+        </div>
+      `,
+      className: 'custom-icon'
     });
   }
+  
   
   private addMarkers() {
     this.markerData.forEach(data => {
@@ -219,8 +235,8 @@ export class RealTimeComponent {
 
       marker.on('click', () => {
         this.selectedItem = this.connections;
+        this.obuSend = data;
         this.toggleSideNav(true);
-
       });
 
       this.markers.push(marker);

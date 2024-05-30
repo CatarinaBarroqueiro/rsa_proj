@@ -119,6 +119,9 @@ private svgRSUicon = `
 
   private routePolyline: L.Polyline | undefined;
   showRouteButton: boolean | undefined;
+  showFilterFlag: boolean =false;
+  backup:any[]=[];
+
   
 
   private createCustomIcon(label: string, type: string): L.DivIcon {
@@ -218,6 +221,56 @@ private svgRSUicon = `
       this.map.fitBounds(this.routePolyline.getBounds());
     }
   }
+
+  public showFilter() {
+    this.showFilterFlag=!this.showFilterFlag;
+    if (this.showFilterFlag) {  
+      // Clear all existing markers
+      this.clearMarkers();
+  
+      // Add marker for the selectedItem
+      if (this.selectedItem) {
+        const marker = L.marker(this.selectedItem.coords, { icon: this.createCustomIcon(this.selectedItem.label, this.selectedItem.type) });
+        marker.addTo(this.map);
+  
+        marker.on('click', () => {
+          // Update the selectedItem to the one found in markerData
+          this.selectedItem = this.markerData.find(data => data.label === this.selectedItem.label);
+          this.toggleSideNav(true);
+          // Show or hide the "Show Route" button based on the type of selectedItem
+          this.showRouteButton = this.selectedItem.type === 'car';
+        });
+  
+        // Add the marker to the markers array
+        this.markers.push(marker);
+      }
+    } else {
+      // Restore the backup markers to the map
+      this.backup.forEach(back => {
+        const marker = L.marker(back.coords, { icon: this.createCustomIcon(back.label, back.type) });
+        marker.addTo(this.map);
+  
+        marker.on('click', () => {
+          // Set the selectedItem to the clicked marker's data
+          this.selectedItem = back;
+          this.toggleSideNav(true);
+          // Show or hide the "Show Route" button based on the type of selectedItem
+          this.showRouteButton = back.type === 'car';
+        });
+  
+        // Add the marker to the markers array
+        this.markers.push(marker);
+      });
+    }
+  }
+  
+  
+  private clearMarkers() {
+    this.backup = this.markers;
+    this.markers.forEach(marker => marker.removeFrom(this.map));
+    this.markers = [];
+  }
+  
   
   
 

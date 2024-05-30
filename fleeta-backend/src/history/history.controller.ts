@@ -93,5 +93,15 @@ export class HistoryController {
         
     }
 
+    @Get('/obu')
+    async getObu(@Query('obu') obu : string) {
+        try{
+           return await this.historyService.findObu(obu) 
+        }catch(e){
+            console.log(e)
+            return "Get Obu failed";
+        }   
+    }
+
     
 }
