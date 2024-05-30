@@ -42,6 +42,11 @@ export class MapComponent implements OnInit, AfterViewInit {
 </svg>
 `;
 
+private svgRSUicon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 50 50">
+  <image href="assets/antena.png" width="50" height="50" />
+</svg>
+`;
   private svgPinIcon = `
     <svg width="20" height="30" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.777 12.5 28.5 12.5 28.5S25 22.277 25 12.5C25 5.596 19.404 0 12.5 0zM12.5 18.75c-3.45 0-6.25-2.8-6.25-6.25s2.8-6.25 6.25-6.25 6.25 2.8 6.25 6.25-2.8 6.25-6.25 6.25z" fill="#FF0000"/>
@@ -127,10 +132,13 @@ export class MapComponent implements OnInit, AfterViewInit {
         iconSvg = this.svgWarnIcon;
         break;
       case 'speed':
-        iconSvg = this.svginfoIcon; // Using svginfoIcon for the 'speed' type
+        iconSvg = this.svginfoIcon; 
+        break;
+      case 'local':
+        iconSvg = this.svgPinIcon;
         break;
       default:
-        iconSvg = this.svgPinIcon;
+        iconSvg = this.svgRSUicon;
     }
   
     let backgroundColor = 'rgba(255, 255, 255, 0.8)'; 
