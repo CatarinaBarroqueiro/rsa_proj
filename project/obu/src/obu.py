@@ -84,7 +84,7 @@ def add_gps_event_to_orbitdb(location: Location, event: Event, sequenceCounter: 
 
     # Check if the request was successful
     if response.status_code == 200:
-        logging.info("Event POST request was successful!")
+        logging.debug("Event POST request was successful!")
     else:
         logging.error(f"Failed to make Event POST request. Status code: {response.status_code}, Response: {response.json()}")
 
@@ -144,7 +144,7 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
         if(event == None):
             logging.debug("No event generated")
         else:
-            logging.info("Event generated: " + event.value)
+            logging.debug("Event generated: " + event.value)
 
         sequenceCounter += 1
         sleep(frequency)

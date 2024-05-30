@@ -1,17 +1,3 @@
-/**
- * A simple nodejs script which launches an orbitdb instance and creates a db
- * with a single record.
- *
- * To run from the terminal:
- *
- * ```bash
- * node index.js
- * ```
- * or
- * ```bash
- * node index.js /orbitdb/<hash>
- * ```
- */
 import { createHelia } from "helia";
 import { createOrbitDB, OrbitDBAccessController } from "@orbitdb/core";
 import { createLibp2p } from "libp2p";
@@ -33,6 +19,7 @@ import express from "express";
 // Dictionary to store remote OrbitDB databases
 const remoteOrbitdbs = {};
 const remoteDatabases = {};
+const remoteLastSeq = {};
 
 // Set up libp2p and IPFS
 const setupOrbitDB = async (obuId) => {
@@ -92,10 +79,11 @@ app.post("/addHash", async (req, res) => {
     let remoteDB = await remoteOrbitdb.open(hash)
     remoteOrbitdbs[id] = remoteOrbitdb;
     remoteDatabases[id] = remoteDB;
-    const putHash = await remoteDB.put('rsu', 'hey')
+    remoteLastSeq[id] = 0;
+    //const putHash = await remoteDB.put('rsu', 'hey')
     // Print the content of the database after each message
-    console.log(`Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
+    //console.log(`Current content of remote database ${id}:`);
+    //console.log(await remoteDB.all());
 
     console.log(`[Orbit] Connected to remote OrbitDB with ID ${id}`);
     res.json({ success: true });
@@ -104,6 +92,31 @@ app.post("/addHash", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Function to check and print new records every 5 seconds
+const checkAndPrintUpdates = async () => {
+  for (const [id, db] of Object.entries(remoteDatabases)) {
+    try {
+      const allEntries = await db.all();
+      const entries = Object.entries(allEntries).sort((a, b) => a[0] - b[0]); // Sort by sequence number
+      const lastSeq = remoteLastSeq[id];
+      const newEntries = entries.filter(([seq]) => seq > lastSeq);
+
+      if (newEntries.length > 0) {
+        console.log(`New entries in remote database ${id}:`);
+        newEntries.forEach(([seq, value]) => {
+          console.log(`Seq: ${seq}, Value: ${JSON.stringify(value)}`);
+        });
+        remoteLastSeq[id] = Math.max(...newEntries.map(([seq]) => seq));
+      }
+    } catch (error) {
+      console.error(`[Orbit] Error checking updates for remote database ${id}: ${error.message}`);
+    }
+  }
+};
+
+// Start checking for updates every 5 seconds
+setInterval(checkAndPrintUpdates, 5000);
 
 // Start the server
 app.listen(PORT, () => {

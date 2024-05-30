@@ -1,17 +1,3 @@
-/**
- * A simple nodejs script which launches an orbitdb instance and creates a db
- * with a single record.
- *
- * To run from the terminal:
- *
- * ```bash
- * node index.js
- * ```
- * or
- * ```bash
- * node index.js /orbitdb/<hash>
- * ```
- */
 import { createHelia } from "helia";
 import { createOrbitDB, OrbitDBAccessController } from "@orbitdb/core";
 import { createLibp2p } from "libp2p";
@@ -111,10 +97,10 @@ app.post("/addHash", async (req, res) => {
     let remoteDB = await remoteOrbitdb.open(hash)
     remoteOrbitdbs[id] = remoteOrbitdb;
     remoteDatabases[id] = remoteDB;
-    const putHash = await remoteDB.put('remote', 'put')
-    // Print the content of the database after each message
-    console.log(`Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
+    //const putHash = await remoteDB.put('remote', 'put')
+    //// Print the content of the database after each message
+    //console.log(`Current content of remote database ${id}:`);
+    //console.log(await remoteDB.all());
 
     console.log(`[Orbit] Connected to remote OrbitDB with ID ${id}`);
     res.json({ success: true });
@@ -137,8 +123,8 @@ app.post("/addData", async (req, res) => {
     await db.put(seq, { obu, latitude, longitude, event });
 
     // Print the content of the database after each message
-    console.log("Current database content:");
-    console.log(await db.all());
+    //console.log("Current database content:");
+    //console.log(await db.all());
     
     console.log(`[Orbit] Stored data with seq ${seq} in local OrbitDB`);
     res.json({ success: true });
