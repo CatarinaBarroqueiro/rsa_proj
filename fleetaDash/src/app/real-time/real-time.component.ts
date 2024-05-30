@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import { SideNavComponent } from '../side-nav/side-nav.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpParams } from '@angular/common/http';
-
+import { Subscription, interval } from 'rxjs';
 
 
 @Component({
@@ -92,51 +92,91 @@ export class RealTimeComponent {
     this.fetchRealTime();
   }
 
-
+  // Declare a variable to hold the subscription
+  private dataSubscription: Subscription | undefined;
+  
   fetchRealTime() {
-    const url = 'http://localhost:3000/realtime';
-    this.http.get<any>(url).subscribe(
-      (response) => {
-        console.log("Data : " + JSON.stringify(response));
-
-        // Clear existing data
-        this.markers = [];
-        this.connections = [];
-        this.markerData = [];
-
-        // Process obus data
-        if (response.obus) {
-          response.obus.forEach((obu: { obu: string, location: { latitude: number, longitude: number } }) => {
-            const { obu: label, location: { latitude, longitude } } = obu;
-            const coords: L.LatLngTuple = [latitude, longitude];
-            this.markerData.push({ coords, label, type: 'car' });
-
-            // Create and add marker to the map
-            const marker = L.marker(coords).addTo(this.map).bindPopup(label);
-            this.markers.push(marker);
-          });
+    // Clear any existing subscription
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
+  
+    // Set up a new subscription to fetch data every 5 seconds
+    this.dataSubscription = interval(5000).subscribe(() => {
+      const url = 'http://localhost:3000/realtime';
+      this.http.get<any>(url).subscribe(
+        (response) => {
+          console.log("Data : " + JSON.stringify(response));
+          
+          // Clear existing data
+          this.clearMapData();
+    
+          // Check if the response has data
+          if (response && response.data && response.data.length > 0) {
+            const lastItem = response.data[response.data.length - 1];
+            // Debugging: log the raw strings before parsing
+            console.log("Raw obus string:", lastItem.obus);
+            console.log("Raw connectivity string:", lastItem.connectivity);
+    
+            try {
+              // Clean and parse the JSON strings
+              const obusString = lastItem.obus.replace(/\\n/g, "").replace(/\\"/g, '"').replace(/^"|"$/g, '');
+              const connectivityString = lastItem.connectivity.replace(/\\n/g, "").replace(/\\"/g, '"').replace(/^"|"$/g, '');
+                
+              console.log("Cleaned obus string:", obusString);
+              console.log("Cleaned connectivity string:", connectivityString);
+    
+              const obus = JSON.parse(obusString);
+              const connectivity = JSON.parse(connectivityString);
+    
+              // Process obus data
+              if (obus) {
+                obus.forEach((obu: { obu: string, location: { latitude: number, longitude: number } }) => {
+                  const { obu: label, location: { latitude, longitude } } = obu;
+                  const coords: L.LatLngTuple = [latitude, longitude];
+                  this.markerData.push({ coords, label, type: 'car' });
+                });
+              }
+    
+              // Process connectivity data
+              if (connectivity) {
+                connectivity.forEach((connection: { pair: { obu1: string, obu2: string } }) => {
+                  const { obu1, obu2 } = connection.pair;
+                  this.connections.push([obu1, obu2]);
+                });
+              }
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+              console.error('Original obus string:', lastItem.obus);
+              console.error('Original connectivity string:', lastItem.connectivity);
+            }
+          }
+    
+          console.log('Markers:', this.markers);
+          console.log('Connections:', this.connections);
+          console.log('Marker Data:', this.markerData);
+    
+          this.addMarkers();
+          this.centerMap();
+        },
+        (error) => {
+          console.error('Error fetching Real Time:', error);
         }
-
-        // Process connectivity data
-        if (response.connectivity) {
-          response.connectivity.forEach((connection: { pair: { obu1: string, obu2: string } }) => {
-            const { obu1, obu2 } = connection.pair;
-            this.connections.push([obu1, obu2]);
-          });
-        }
-
-        console.log('Markers:', this.markers);
-        console.log('Connections:', this.connections);
-        console.log('Marker Data:', this.markerData);
-
-        this.addMarkers();
-        this.centerMap();
-      },
-      (error) => {
-        console.error('Error fetching Real Time:', error);
-      }
-    );
+      );
+    });
   }
+  
+  // Function to clear existing map data
+  private clearMapData() {
+    this.markers.forEach(marker => {
+      marker.removeFrom(this.map);
+    });
+    this.markers = [];
+    this.connections = [];
+    this.markerData = [];
+  }
+  
+  
 
   private initializeMap() {
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
