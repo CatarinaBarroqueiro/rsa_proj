@@ -103,9 +103,9 @@ class Device:
             return False
         
         if self.deviceType == "OBU":
-            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} block {macToBlock}")
+            ret = 0 #os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} block {macToBlock}")
         elif self.deviceType == "RSU":
-            ret = os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} block {macToBlock}")
+            ret = 0 #os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} block {macToBlock}")
         else:
             logging.error("Invalid device type")
             return False
@@ -141,9 +141,9 @@ class Device:
         #    return False
         
         if self.deviceType == "OBU":
-            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
+            ret = 0 #os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
         elif self.deviceType == "RSU":
-            ret = os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToUnblock}")
+            ret = 0 #os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToUnblock}")
         else:
             logging.error("Invalid device type")
             return False

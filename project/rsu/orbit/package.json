@@ -6,6 +6,7 @@
     "@libp2p/tcp": "^9.0.26",
     "@multiformats/multiaddr": "^12.2.3",
     "@orbitdb/core": "^2.2.0",
+    "axios": "^1.7.2",
     "blockstore-level": "^1.1.8",
     "express": "^4.19.2",
     "helia": "^4.2.3",

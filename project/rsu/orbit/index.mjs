@@ -10,6 +10,7 @@ import { noise } from "@chainsafe/libp2p-noise";
 import { LevelBlockstore } from "blockstore-level";
 import fs from "fs";
 import express from "express";
+import axios from "axios";
 
 /*
   #####################################
@@ -82,8 +83,8 @@ app.post("/addHash", async (req, res) => {
     remoteLastSeq[id] = 0; // Initialize the last known sequence number
 
     // Print the content of the database after each message
-    console.log(`Current content of remote database ${id}:`);
-    console.log(await remoteDB.all());
+    //console.log(`Current content of remote database ${id}:`);
+    //console.log(await remoteDB.all());
 
     console.log(`[Orbit] Connected to remote OrbitDB with ID ${id}`);
     res.json({ success: true });
@@ -93,19 +94,48 @@ app.post("/addHash", async (req, res) => {
   }
 });
 
+// Function to post new entries to an external API
+const postNewEntry = async (id, seq, entry) => {
+  const { obu, event, latitude, longitude } = entry.value;
+  const dataToPost = {
+    obu,
+    latitude,
+    longitude,
+    event
+  };
+
+  try {
+    const response = await axios.post('http://192.168.68.111:3000/history', dataToPost);
+    console.log(`Successfully posted entry ${seq} to external API:`);
+  } catch (error) {
+    console.error(`Failed to post entry ${seq} to external API:`, error.message);
+  }
+};
+
 
 // Function to check and print new records every 5 seconds
 const checkAndPrintUpdates = async () => {
   // Print the number of records in remoteDatabases
-  console.log(`[Orbit] Number of remote databases: ${Object.keys(remoteDatabases).length}`);
-
+  //console.log(`[Orbit] Number of remote databases: ${Object.keys(remoteDatabases).length}`);
   for (const [id, db] of Object.entries(remoteDatabases)) {
     try { 
       // wait 1 second
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log(`[Orbit] Current content of remote database ${id}:`);
-      console.log(await db.all());
+      //console.log(`[Orbit] Current content of remote database ${id}:`);
+      //console.log(await db.all());
+      const allEntries = await db.all();
+      const entries = Object.entries(allEntries).sort((a, b) => a[0] - b[0]); // Sort by sequence number
+      const lastSeq = remoteLastSeq[id];
+      const newEntries = entries.filter(([seq]) => seq > lastSeq);
+      if (newEntries.length > 0) {
+        console.log(`New entries in remote database ${id}:`);
+        for (const [seq, entry] of newEntries) {
+          console.log(`Seq: ${seq}, Value: ${JSON.stringify(entry)}`);
+          await postNewEntry(id, seq, entry); // Post the new entry to the external API
+        }
+        remoteLastSeq[id] = Math.max(...newEntries.map(([seq]) => seq));
+      }
 
     } catch (error) {
       console.error(`[Orbit] Error accessing remote OrbitDB ${id}: ${error.message}`);
