@@ -248,33 +248,46 @@ private svgRSUicon = `
       this.map.removeLayer(this.routePolyline!);
       this.routePolyline = undefined;
       this.carRoute = []; // Clear the carRoute array
+      this.clearMarkers();
+      this.fetchMarkerData();
       return; // Exit the function
     }
   
     try {
       // Make the HTTP request to fetch the data
-      const response = await fetch('http://localhost:3000/history/obu?obu='+this.selectedItem.label);
-      
+      const response = await fetch('http://localhost:3000/history/obu?obu=' + this.selectedItem.label);
+  
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+          throw new Error('Failed to fetch data');
       }
-      
+  
       const apiResponse = await response.json();
-      
+  
       // Parse the API response to extract latitude and longitude values
       const coordinates: L.LatLngTuple[] = apiResponse.map((data: { latitude: string; longitude: string; }) => [parseFloat(data.latitude), parseFloat(data.longitude)]);
-      
+  
       // Update the carRoute array with the coordinates from the API response
       this.carRoute = coordinates.slice(0, 10); // Limit to a maximum of 10 values
-      
+  
+      // Add the API response data to the markerData array
+      this.markerData = apiResponse.map((data: { latitude: string; longitude: string; obu: string; event: string; }) => {
+          return {
+              coords: [parseFloat(data.latitude), parseFloat(data.longitude)],
+              label: data.obu,
+              type: data.event
+          };
+      });
+      this.addMarkers()
+  
       if (this.carRoute.length > 0) {
-        // Draw the route polyline on the map
-        this.routePolyline = L.polyline(this.carRoute, { color: '#800020' }).addTo(this.map);
-        this.map.fitBounds(this.routePolyline.getBounds());
+          // Draw the route polyline on the map
+          this.routePolyline = L.polyline(this.carRoute, { color: '#800020' }).addTo(this.map);
+          this.map.fitBounds(this.routePolyline.getBounds());
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching data:', error);
-    }
+  }
+  
   }
   
 
