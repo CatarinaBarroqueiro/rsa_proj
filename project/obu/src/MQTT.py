@@ -53,7 +53,15 @@ class MQTT:
         self.client.connect(self.brokerHostName, self.brokerHostPort)
         self.client.on_message = self._on_message
         self.client.loop_start()
-        self.client.subscribe(self.initTopic)
+        
+        # Remove the last / and add + to subscribe to all topics
+        parts = self.initTopic.split("/")
+        # Modify the last element
+        parts[-1] = "+"
+        # Join the modified parts back with '/'
+        allInitTopics: str = "/".join(parts)
+        
+        self.client.subscribe(allInitTopics)
         self.client.subscribe(self.controllerTopic)
 
     def publish(self, topic: str, message: str) -> None:
@@ -116,11 +124,12 @@ class MQTT:
             else:
                 logging.error("Invalid message received")
 
-        elif message.topic == self.initTopic:
-            if "type" in payload and "device" in payload and payload["device"] != "OBU":
+        elif "type" in payload and payload["type"] == "GREETING":
+            if "device" in payload and payload["device"] != "OBU":
                 logging.debug("Received message from RSU")
                 return
-            if "type" in payload and "id" in payload and "dbHash" in payload:
+                        
+            if "id" in payload and "dbHash" in payload:
                 self.devicesHash[payload["id"]] = payload["dbHash"]
             else:
                 logging.error("Invalid message received")

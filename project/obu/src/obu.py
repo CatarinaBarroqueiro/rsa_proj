@@ -11,8 +11,10 @@ from GPS import GPS, Location
 from MQTT import MQTT
 from Event import Event, EVENTS
 import logging
+import requests
 
-myDbHash = "abcd"
+""" Used to keep track of how many requests where sent to orbit """
+sequenceCounter: int = 0
 
 def get_mac() -> str:
     """
@@ -21,6 +23,73 @@ def get_mac() -> str:
         - The MAC address of the OBU
     """
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
+
+def add_hashes_to_orbitdb(hashes: dict[str, str]):
+    """
+    Add the hashes of the devices to the OrbitDB
+    Args:
+        - hashes: The dictionary containing the hashes of the devices
+    """
+    for obuId, hash in hashes.items():
+        if obuId == os.environ['OBU_ID']:
+            continue
+
+        url = "http://localhost:" + os.environ['PYTHON_NODE_API_PORT'] + "/addHash"
+        payload = {
+            "id": obuId,
+            "hash": hash
+        }
+
+        jsonPayload = json.dumps(payload)
+        logging.debug("Sending data to orbit: " + jsonPayload)
+
+        headers = { "Content-Type": "application/json"}
+    
+        # Send the POST request
+        response = requests.post(url, data=jsonPayload, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            logging.info("Hash POST request was successful!")
+        else:
+            logging.error(f"Failed to make Hash POST request. Status code: {response.status_code}, Response: {response.json()}")
+
+
+def add_gps_event_to_orbitdb(location: Location, event: Event):
+    """
+    Add the GPS location and event to the OrbitDB
+    Args:
+        - location: The GPS location
+        - event: The event
+    """
+    url = "http://localhost:" + os.environ['PYTHON_NODE_API_PORT'] + "/addData"
+
+    eventStr: str = "NONE"
+    if event != None:
+        eventStr = event.value
+
+    payload = {
+        "seq": sequenceCounter,
+        "obu": os.environ['OBU_ID'],
+        "latitude": float(location.latitude),
+        "longitude": float(location.longitude),
+        "event": eventStr
+    }
+
+    jsonPayload = json.dumps(payload)
+    logging.debug("Sending data to orbit: " + jsonPayload)
+
+    headers = { "Content-Type": "application/json"}
+    
+    # Send the POST request
+    response = requests.post(url, data=jsonPayload, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        logging.info("Event POST request was successful!")
+    else:
+        logging.error(f"Failed to make Event POST request. Status code: {response.status_code}, Response: {response.json()}")
+
 
 
 def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler: Event) -> None:
@@ -58,6 +127,9 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
     # Wait for the order to start the simulation from the controller
     mqtt.wait_for_start()
 
+    # Add the hashes of the devices to the OrbitDB
+    add_hashes_to_orbitdb(mqtt.devicesHash)
+
     # Publish the location data to the MQTT broker
     while True:
         location = gps.get_location()
@@ -67,8 +139,9 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
 
         mqtt.publish(mqtt.gpsTopic, location.json_to_str())
         event = eventHandler.get_event()
+        add_gps_event_to_orbitdb(location, event)
         if(event == None):
-            logging.info("No event generated")
+            logging.debug("No event generated")
         else:
             logging.info("Event generated: " + event.value)
         sleep(frequency)

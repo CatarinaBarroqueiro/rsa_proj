@@ -33,6 +33,7 @@ services:
       - EVENT_PROBABILITY=5
       - LOG_LEVEL=DEBUG
       - SUPPORT_MAC_BLOCKING=true
+      - PYTHON_NODE_API_PORT=8000
     mac_address: 02:42:c0:a8:62:01
     depends_on:
       - fleeta-mqtt-broker
@@ -56,6 +57,7 @@ services:
       - EVENT_PROBABILITY=5
       - LOG_LEVEL=DEBUG
       - SUPPORT_MAC_BLOCKING=true
+      - PYTHON_NODE_API_PORT=8000
     mac_address: 02:42:c0:a8:62:02
     depends_on:
       - fleeta-mqtt-broker
@@ -79,6 +81,7 @@ services:
       - EVENT_PROBABILITY=5
       - LOG_LEVEL=DEBUG
       - SUPPORT_MAC_BLOCKING=true
+      - PYTHON_NODE_API_PORT=8000
     mac_address: 02:42:c0:a8:62:03
     depends_on:
       - fleeta-mqtt-broker
@@ -101,6 +104,7 @@ services:
       - RSU_GPS_LONGITUDE=-8.659934442327566
       - LOG_LEVEL=DEBUG
       - SUPPORT_MAC_BLOCKING=true
+      - PYTHON_NODE_API_PORT=8000
     mac_address: 02:42:c0:a8:62:03
     depends_on:
       - fleeta-mqtt-broker
