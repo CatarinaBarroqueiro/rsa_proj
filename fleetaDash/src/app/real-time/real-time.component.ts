@@ -102,7 +102,7 @@ export class RealTimeComponent {
     }
   
     // Set up a new subscription to fetch data every 5 seconds
-    this.dataSubscription = interval(5000).subscribe(() => {
+    this.dataSubscription = interval(2000).subscribe(() => {
       const url = 'http://localhost:3000/realtime';
       this.http.get<any>(url).subscribe(
         (response) => {
