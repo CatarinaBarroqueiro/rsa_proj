@@ -17,6 +17,11 @@ from packages.Location import Location
 # Global variables
 connectedDevices: list[list] = []
 
+def can_append_pair(pair):
+    reversePair = [pair[1], pair[0]]
+    return reversePair not in connectedDevices
+
+
 def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     """
     Join two devices
@@ -25,14 +30,13 @@ def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
         - device1: The first device
         - device2: The second device
     """
-    #if [device1.deviceID, device2.deviceID] in connectedDevices:
-    #    return
+    if can_append_pair([device1.deviceID, device2.deviceID]) and [device1.deviceID, device2.deviceID] not in connectedDevices:
+        connectedDevices.append([device1.deviceID, device2.deviceID])
 
-    connectedDevices.append([device1.deviceID, device2.deviceID])
     logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are connected")
     if device1.mac not in device2.blockedMac or device2.mac not in device1.blockedMac:
         return
-    
+        
     device1.unblock_device(device2.mac)
     device2.unblock_device(device1.mac)
 
@@ -46,12 +50,12 @@ def block_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
         - device2: The second device
     """
     logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are blocked")
-    if device1.mac in device2.blockedMac or device2.mac in device1.blockedMac:
-        return
-    
     if connectedDevices.count([device1.deviceID, device2.deviceID]) > 0:
         connectedDevices.remove([device1.deviceID, device2.deviceID])
 
+    if device1.mac in device2.blockedMac or device2.mac in device1.blockedMac:
+        return
+    
     device1.block_device(device2.mac)
     device2.block_device(device1.mac)
 
@@ -71,10 +75,10 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
     obus: list[dict] = []
     for key, value in mqtt.locations.items():
         obus.append({
-            "obu": key,
+            "obu": str(key),
             "location": {
-                "latitude": value.latitude,
-                "longitude": value.longitude
+                "latitude": float(value.latitude),
+                "longitude": float(value.longitude)
             },
         })
     payload["obus"] = obus
@@ -88,6 +92,7 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
                 "obu2": value[1]
             }
         })
+    payload["connectivity"] = connectivity
 
     # Convert the data to JSON format
     jsonPayload = json.dumps(payload)
@@ -103,20 +108,24 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
     response = requests.post(BACKEND_URL, data=jsonPayload, headers=headers)
 
     # Check if the request was successful
-    if response.status_code == 200:
+    if response.status_code == 200 or response.status_code == 201:
         logging.info("POST request was successful!")
     else:
-        logging.error(f"Failed to make POST request. Status code: {response.status_code}")
+        logging.error(f"Failed to make POST request. Status code: {response.status_code}, Response: {response.json()}")
 
     
 
-def lifecycle(mqtt: MQTT, backendURL: str) -> None:
+def lifecycle(mqtt: MQTT, backendURL: str, sleepTime) -> None:
     """
     The lifecycle of the Orchestrator
     Args:
         - mqtt: The MQTT client
+        - backendURL: The URL of the backend
+        - sleepTime: The time to sleep between each iteration
     """  
     while True:
+        sleep(sleepTime)
+
         for key, value in mqtt.locations.items():
             for compKey, compValue in mqtt.locations.items():
                 if key == compKey:
@@ -129,9 +138,6 @@ def lifecycle(mqtt: MQTT, backendURL: str) -> None:
 
         # Update real-time dashboard
         send_to_backend(mqtt, backendURL)
-
-        # Sleep for 5 seconds
-        sleep(5)
 
 
 if __name__ == "__main__":
@@ -152,6 +158,7 @@ if __name__ == "__main__":
     LOG_LEVEL = config['Settings']['LOG_LEVEL']
     BACKEND_URL = config['Settings']['BACKEND_URL']
     OBUS_NUMBER = int(config['Settings']['OBUS_NUMBER'])
+    LIFECYCLE_SLEEP_TIME = int(config['Settings']['LIFECYCLE_SLEEP_TIME'])
 
     # Create logger
     logLevel = getattr(logging, LOG_LEVEL.upper(), None)
@@ -176,7 +183,7 @@ if __name__ == "__main__":
         mqtt.publish(json.dumps({"order": "init"}))
         mqtt.wait_all_ready()
         mqtt.publish(json.dumps({"order": "start"}))
-        lifecycle(mqtt, BACKEND_URL)
+        lifecycle(mqtt, BACKEND_URL, LIFECYCLE_SLEEP_TIME)
     except KeyboardInterrupt:
         logging.info("Orchestrator lifecycle interrupted")
     #except Exception as e:
