@@ -31,6 +31,13 @@
         <span class="slider"></span>
       </label>
     </div>
+    <div class="toggle-container" *ngIf="!isConnectionsArray(item)">
+      <b><span class="filter-legend">Filter by Car</span></b>
+      <label class="toggle-switch">
+        <input type="checkbox"(click)="onShowFilterClicked()" >
+        <span class="slider"></span>
+      </label>
+    </div>
         <br>
     <button class="show-route-button" *ngIf="!isConnectionsArray(item) && item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
   </div>

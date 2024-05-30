@@ -3,16 +3,21 @@ import * as L from 'leaflet';
 import { SideNavComponent } from '../side-nav/side-nav.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { MarkerData } from './markerData';
 
 @Component({
   selector: 'app-map',
   standalone:true,
   imports:[SideNavComponent,
+    HttpClientModule,
     CommonModule,
     FormsModule],
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
+
+
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
   public sideNavOpen = false;
@@ -101,16 +106,7 @@ private svgRSUicon = `
   `;
 
   
-  private markerData = [
-    { coords: [40.6306, -8.6571] as L.LatLngTuple, label: 'University of Aveiro', type: 'location' },
-    { coords: [40.6374, -8.6415] as L.LatLngTuple, label: 'Train Station', type: 'location' },
-    { coords: [40.6423, -8.6267] as L.LatLngTuple, label: 'Shopping Center', type: 'location' },
-    { coords: [40.6427, -8.6481] as L.LatLngTuple, label: 'Car A', type: 'car' },
-    { coords: [40.6458, -8.6563] as L.LatLngTuple, label: 'Speed', type: 'speed' },
-    { coords: [40.6361, -8.6443] as L.LatLngTuple, label: 'Accident', type: 'warn' },
-    { coords: [40.6300, -8.6481] as L.LatLngTuple, label: 'Car B', type: 'car' },
-    { coords: [40.6350, -8.6581] as L.LatLngTuple, label: 'Car C', type: 'car' }
-  ];
+  private markerData = [];
 
   private connections: string[][] = [
     ['Car A', 'Car C']
@@ -171,15 +167,14 @@ private svgRSUicon = `
 
   markers: L.Marker[] = [];
 
-  constructor() { }
-
+  constructor(private http: HttpClient) { }
   ngOnInit() {
   }
+  
 
   ngAfterViewInit() {
     this.initializeMap();
-    this.addMarkers();
-    this.centerMap();
+    this.fetchMarkerData();
   }
 
   private initializeMap() {
@@ -188,21 +183,46 @@ private svgRSUicon = `
     L.tileLayer(baseMapUrl).addTo(this.map);
   }
 
-  private addMarkers() {
-    this.markerData.forEach(data => {
-      const marker = L.marker(data.coords, { icon: this.createCustomIcon(data.label, data.type) });
-      marker.addTo(this.map);
+  private fetchMarkerData(): void {
+    this.http.get<any>('http://localhost:3000/history').subscribe(response => {
+      console.log('HTTP Response:', response); // Log the HTTP response
+      
+      if (response.data) {
+        this.markerData = response.data.map((item: { latitude: string; longitude: string; obu: any; event: any; }) => {
+          const coords: L.LatLngTuple = [parseFloat(item.latitude), parseFloat(item.longitude)];
+          console.log('Parsed Coordinates:', coords); // Log the parsed coordinates
+          
+          const marker: MarkerData = {
+            coords: coords,
+            label: item.obu,
+            type: item.event
+          };
+          console.log('Marker Data:', marker); // Log the marker data
+          
+          return marker;
+        });
+        console.log('Marker Data Array:', this.markerData); // Log the final marker data array
+  
+        // Add markers to the map and center the map after fetching data
+        this.addMarkers();
+        this.centerMap();
+      }
+    });
+  }
 
+  
+  private addMarkers() {
+    this.markerData.forEach((data: MarkerData) => {
+      const icon = this.createCustomIcon(data.label, data.type); // Create custom icon
+      const marker = L.marker(data.coords, { icon }).addTo(this.map);
+  
       marker.on('click', () => {
+        // Update selectedItem and showRouteButton based on marker data
         this.selectedItem = data;
         this.toggleSideNav(true);
-        if (data.type === 'car') {
-          this.showRouteButton = true; // Show the "Show Route" button in the navbar
-        } else {
-          this.showRouteButton = false; // Hide the button for other markers
-        }
+        this.showRouteButton = data.type === 'car'; // Show route button only for cars
       });
-
+  
       this.markers.push(marker);
     });
   }
@@ -235,7 +255,7 @@ private svgRSUicon = `
   
         marker.on('click', () => {
           // Update the selectedItem to the one found in markerData
-          this.selectedItem = this.markerData.find(data => data.label === this.selectedItem.label);
+          this.selectedItem = this.markerData.find((data:MarkerData) => data.label === this.selectedItem.label);
           this.toggleSideNav(true);
           // Show or hide the "Show Route" button based on the type of selectedItem
           this.showRouteButton = this.selectedItem.type === 'car';
@@ -245,22 +265,7 @@ private svgRSUicon = `
         this.markers.push(marker);
       }
     } else {
-      // Restore the backup markers to the map
-      this.backup.forEach(back => {
-        const marker = L.marker(back.coords, { icon: this.createCustomIcon(back.label, back.type) });
-        marker.addTo(this.map);
-  
-        marker.on('click', () => {
-          // Set the selectedItem to the clicked marker's data
-          this.selectedItem = back;
-          this.toggleSideNav(true);
-          // Show or hide the "Show Route" button based on the type of selectedItem
-          this.showRouteButton = back.type === 'car';
-        });
-  
-        // Add the marker to the markers array
-        this.markers.push(marker);
-      });
+      this.fetchMarkerData();
     }
   }
   
