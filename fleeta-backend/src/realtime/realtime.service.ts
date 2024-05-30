@@ -13,7 +13,7 @@ export class RealtimeService {
     }
 
     async findAll() {
-        return await this.repository.manager.query('Select * from "history"');
+        return await this.repository.manager.query('Select * from "realtime"');
     }
 
     async save(realTime: { obus: { obu: string, latitude: number, longitude: number }[], connectivity: { pair: { obu1: string, obu2: string } }[] }) {
