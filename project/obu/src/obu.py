@@ -1,6 +1,7 @@
 """
 `obu.py` is the main script for the OBU. It represents it's lifecycle.
 """
+from asyncio import wait_for
 import json
 import os
 from time import sleep
@@ -11,6 +12,7 @@ from MQTT import MQTT
 from Event import Event, EVENTS
 import logging
 
+myDbHash = "abcd"
 
 def get_mac() -> str:
     """
@@ -36,16 +38,24 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
         "id": os.environ['OBU_ID'],
         "status": "active",
         "mac": get_mac(),
-        "ip": ipAddress
+        "ip": ipAddress,
+        "dbHash": myDbHash
     }
 
     # Publish the greeting message to the MQTT broker
-    mqtt.publish(json.dumps(msg))
+    mqtt.publish(mqtt.initTopic, json.dumps(msg))
+
+    # Wait for the order to start the simulation from the controller
+    mqtt.wait_for_start()
 
     # Publish the location data to the MQTT broker
     while True:
         location = gps.get_location()
-        mqtt.publish(location.json_to_str())
+        if(location == None):
+            logging.info("End of GPX file")
+            break
+
+        mqtt.publish(mqtt.gasTopic, location.json_to_str())
         event = eventHandler.get_event()
         if(event == None):
             logging.info("No event generated")
@@ -66,10 +76,13 @@ if __name__ == "__main__":
     logging.info("OBU with ID: %s, has mac address of %s and IP: %s", os.environ['OBU_ID'], get_mac(), os.environ['IP_ADDR'])
 
     # Create MQTT client
-    topic: str = os.environ['MQTT_GPS_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
-    mqtt = MQTT(os.environ['MQTT_BROKER_HOST'], os.environ['MQTT_BROKER_PORT'], topic)
+    gasTopic: str = os.environ['MQTT_GPS_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
+    initTopic: str = os.environ['MQTT_INIT_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
+    controllerTopic: str = os.environ['MQTT_CONTROLLER_TOPIC']
+    mqtt = MQTT(os.environ['MQTT_BROKER_HOST'], os.environ['MQTT_BROKER_PORT'], gasTopic, initTopic, controllerTopic)
     try:
-        logging.info("Connecting to MQTT broker with address: " + os.environ['MQTT_BROKER_HOST'] + " and port: " + os.environ['MQTT_BROKER_PORT'] + " and topic: " + topic)
+        logging.info("Connecting to MQTT broker with address: " + os.environ['MQTT_BROKER_HOST'] + " and port: " + os.environ['MQTT_BROKER_PORT'])
+        logging.info("Subscribing to topics: " + initTopic + ", " + controllerTopic + ". Publishing to topics: " + gasTopic + ", " + initTopic)
         mqtt.connect()
     except ConnectionError as e:
         logging.error("Failed to connect to MQTT broker: " + str(e))
@@ -85,6 +98,7 @@ if __name__ == "__main__":
     
     logging.info("Starting OBU lifecycle")
     try:
+        mqtt.wait_for_init()
         lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'], Event(int(os.environ['EVENT_PROBABILITY'])))
     except ConnectionError as e:
         logging.error("Failed to publish GPS data: " + str(e))

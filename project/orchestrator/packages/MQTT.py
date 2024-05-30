@@ -46,8 +46,8 @@ class MQTT:
         self.controllerTopic: str = controllerTopic
         self.obusNumber: int = obusNumber
         self.client: mqtt.ClientClient | None = None
-        self.locations: dict[int, Location] = {}  # Device ID -> Location
-        self.devices: dict[int, Device] = {}  # Device ID -> Device
+        self.locations: dict[str, Location] = {}  # Device ID -> Location
+        self.devices: dict[str, Device] = {}  # Device ID -> Device
 
 
     def connect(self) -> None:
@@ -68,7 +68,7 @@ class MQTT:
 
     def publish(self, message: str) -> None:
         """
-        Publish the message to the MQTT broker
+        Publish the message to the MQTT broker, into `controller` topic
         Args:
             - message: The message to publish
         Raises:

@@ -141,7 +141,7 @@ class Device:
         #    return False
         
         if self.deviceType == "OBU":
-            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macTmacToUnblockoBlock}")
+            ret = os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
         elif self.deviceType == "RSU":
             ret = os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToUnblock}")
         else:

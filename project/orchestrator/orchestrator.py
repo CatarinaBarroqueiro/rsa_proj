@@ -4,6 +4,7 @@
 from calendar import c
 import logging
 import json
+from turtle import back
 import requests
 import os
 import configparser
@@ -14,7 +15,6 @@ from packages.Device import Device
 from packages.Location import Location
 
 # Global variables
-BACKEND_URL = ""
 connectedDevices: list[list] = []
 
 def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
@@ -56,11 +56,12 @@ def block_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     device2.block_device(device1.mac)
 
 
-def send_to_backend(mqtt: MQTT) -> bool:
+def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
     """
     Send the data to the dashboard backend
     Args:
         - mqtt: The MQTT client
+        - backendURL: The URL of the backend
     Returns:
         - bool: True if the data was sent successfully, False otherwise
     """
@@ -68,9 +69,9 @@ def send_to_backend(mqtt: MQTT) -> bool:
 
     # Add OBU's
     obus: list[dict] = []
-    for key, value in mqtt.devices.items():
+    for key, value in mqtt.locations.items():
         obus.append({
-            "obu": value.deviceID,
+            "obu": key,
             "location": {
                 "latitude": value.latitude,
                 "longitude": value.longitude
@@ -109,7 +110,7 @@ def send_to_backend(mqtt: MQTT) -> bool:
 
     
 
-def lifecycle(mqtt: MQTT) -> None:
+def lifecycle(mqtt: MQTT, backendURL: str) -> None:
     """
     The lifecycle of the Orchestrator
     Args:
@@ -127,7 +128,7 @@ def lifecycle(mqtt: MQTT) -> None:
                     block_devices(mqtt, mqtt.devices[key], mqtt.devices[compKey])
 
         # Update real-time dashboard
-        send_to_backend(mqtt)
+        send_to_backend(mqtt, backendURL)
 
         # Sleep for 5 seconds
         sleep(5)
@@ -163,7 +164,8 @@ if __name__ == "__main__":
     # Create MQTT client
     mqtt = MQTT(MQTT_BROKER_HOST, MQTT_BROKER_PORT, GPS_TOPIC, INIT_TOPIC, CONTROLLER_TOPIC, OBUS_NUMBER)
     try:
-        logging.info("Connecting to MQTT broker with address: " + MQTT_BROKER_HOST + " and port: " + MQTT_BROKER_PORT + " and topic: " + GPS_TOPIC)
+        logging.info("Connecting to MQTT broker with address: " + MQTT_BROKER_HOST + " and port: " + MQTT_BROKER_PORT)
+        logging.info("Subscribing to topics: " + GPS_TOPIC + ", " + INIT_TOPIC + ". Publishing to: " + CONTROLLER_TOPIC)
         mqtt.connect()
     except ConnectionError as e:
         logging.error("Failed to connect to MQTT broker: " + str(e))
@@ -171,8 +173,10 @@ if __name__ == "__main__":
 
     logging.info("Starting Orchestrator lifecycle")
     try:
+        mqtt.publish(json.dumps({"order": "init"}))
         mqtt.wait_all_ready()
-        lifecycle(mqtt)
+        mqtt.publish(json.dumps({"order": "start"}))
+        lifecycle(mqtt, BACKEND_URL)
     except KeyboardInterrupt:
         logging.info("Orchestrator lifecycle interrupted")
     #except Exception as e:
