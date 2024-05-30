@@ -2,12 +2,14 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import * as L from 'leaflet';
 import { SideNavComponent } from '../side-nav/side-nav.component';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule, HttpParams } from '@angular/common/http';
+
 
 
 @Component({
   selector: 'app-real-time',
   standalone: true,
-  imports: [SideNavComponent, CommonModule],
+  imports: [SideNavComponent, CommonModule, HttpClientModule],
   templateUrl: './real-time.component.html',
   styleUrl: './real-time.component.css'
 })
@@ -68,7 +70,11 @@ export class RealTimeComponent {
   private map!: L.Map
   markers: L.Marker[] = [
   ];
-
+  
+  private connections: string[][] = [
+    ['Car A', 'Car C']
+   
+  ]; 
   private markerData = [
     { coords: [40.6427, -8.6481] as L.LatLngTuple, label: 'Car A', type: 'car' },
     { coords: [40.6300, -8.6481] as L.LatLngTuple, label: 'Car B', type: 'car' },
@@ -76,17 +82,61 @@ export class RealTimeComponent {
   ];
 
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
   }
 
   ngAfterViewInit() {
     this.initializeMap();
-    this.addMarkers();
-    this.centerMap();
+    this.fetchRealTime();
   }
 
+
+  fetchRealTime() {
+    const url = 'http://localhost:3000/realtime';
+    this.http.get<any>(url).subscribe(
+      (response) => {
+        console.log("Data : " + JSON.stringify(response));
+
+        // Clear existing data
+        this.markers = [];
+        this.connections = [];
+        this.markerData = [];
+
+        // Process obus data
+        if (response.obus) {
+          response.obus.forEach((obu: { obu: string, location: { latitude: number, longitude: number } }) => {
+            const { obu: label, location: { latitude, longitude } } = obu;
+            const coords: L.LatLngTuple = [latitude, longitude];
+            this.markerData.push({ coords, label, type: 'car' });
+
+            // Create and add marker to the map
+            const marker = L.marker(coords).addTo(this.map).bindPopup(label);
+            this.markers.push(marker);
+          });
+        }
+
+        // Process connectivity data
+        if (response.connectivity) {
+          response.connectivity.forEach((connection: { pair: { obu1: string, obu2: string } }) => {
+            const { obu1, obu2 } = connection.pair;
+            this.connections.push([obu1, obu2]);
+          });
+        }
+
+        console.log('Markers:', this.markers);
+        console.log('Connections:', this.connections);
+        console.log('Marker Data:', this.markerData);
+
+        this.addMarkers();
+        this.centerMap();
+      },
+      (error) => {
+        console.error('Error fetching Real Time:', error);
+      }
+    );
+  }
 
   private initializeMap() {
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -94,12 +144,6 @@ export class RealTimeComponent {
     L.tileLayer(baseMapURl).addTo(this.map);
   }
 
-
- 
-  private connections: string[][] = [
-    ['Car A', 'Car C']
-   
-  ]; 
  
   private createCustomIcon(label: string, type: string): L.DivIcon {
     const iconSvg = this.svgCarIcon;

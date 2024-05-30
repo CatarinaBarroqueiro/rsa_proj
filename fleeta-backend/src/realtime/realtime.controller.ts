@@ -45,7 +45,7 @@ export class RealtimeController {
         let api = {
             op: 'Post Real Time',
             date: moment().toString(),
-            request: history,
+            request: realTime,
             result: null,
             validation: null
         };
