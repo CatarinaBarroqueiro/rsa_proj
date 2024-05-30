@@ -18,7 +18,7 @@ class MQTT:
     Attributes:
         - brokerHostName: The hostname of the MQTT broker
         - brokerPort: The port number of the MQTT broker
-        - gasTopic: The topic for the gas data
+        - gpsTopic: The topic for the gps data
         - initTopic: The topic for the hash data
         - controllerTopic: The topic for the controller data
         - obusNumber: The number of OBU's
@@ -26,13 +26,13 @@ class MQTT:
         - obuLocations: The dictionary of OBU locations
         - devices: The dictionary of devices
     """
-    def __init__(self, brokerHostName: str, brokerHostPort: str, gasTopic: str, initTopic: str, controllerTopic: str, obusNumber: int) -> None:
+    def __init__(self, brokerHostName: str, brokerHostPort: str, gpsTopic: str, initTopic: str, controllerTopic: str, obusNumber: int) -> None:
         """
         Initialize the class
         Args:
             - brokerHostName: The hostname of the MQTT broker
             - brokerHostPort: The port number of the MQTT broker
-            - gasTopic: The topic for the gas data
+            - gpsTopic: The topic for the gps data
             - initTopic: The topic for the hash data
             - controllerTopic: The topic for the controller data
             - obusNumber: The number of OBU's
@@ -41,7 +41,7 @@ class MQTT:
         """
         self.brokerHostName: str = brokerHostName
         self.brokerHostPort: int = int(brokerHostPort)
-        self.gasTopic: str = gasTopic
+        self.gpsTopic: str = gpsTopic
         self.initTopic: str = initTopic
         self.controllerTopic: str = controllerTopic
         self.obusNumber: int = obusNumber
@@ -62,7 +62,7 @@ class MQTT:
         self.client.on_connect = self.on_connect
         # Repeatly call the loop() in a thread, until disconnect() is called
         self.client.loop_start()
-        self.client.subscribe(self.gasTopic)
+        self.client.subscribe(self.gpsTopic)
         self.client.subscribe(self.initTopic)
 
 
@@ -154,7 +154,7 @@ class MQTT:
                                     )
             device.configure_device()
             self.devices[devId] = device
-            logging.debug("Received GREETING message from OBU: " + str(devId) + " with device: " + str(device))
+            logging.debug("Received GREETING message from " + payload['device'] + ": " + str(devId) + " with device: " + str(device))
             
             
         # Process a GPS message

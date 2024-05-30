@@ -67,8 +67,13 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
         - mqtt: The MQTT client
         - backendURL: The URL of the backend
     Returns:
-        - bool: True if the data was sent successfully, False otherwise
+        - bool: True if the data was sent successfully, 
+            False if device locations is different than the configured
+            obus number or if otherwise connection to backend couldn't be established
     """
+    if len(mqtt.locations.values()) < mqtt.obusNumber:
+        return False
+    
     payload: dict = {}
 
     # Add OBU's
@@ -112,7 +117,6 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
         logging.info("POST request was successful!")
     else:
         logging.error(f"Failed to make POST request. Status code: {response.status_code}, Response: {response.json()}")
-
     
 
 def lifecycle(mqtt: MQTT, backendURL: str, sleepTime) -> None:

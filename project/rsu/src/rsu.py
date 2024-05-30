@@ -2,14 +2,13 @@
 `obu.py` is the main script for the OBU. It represents it's lifecycle.
 """
 from asyncio import wait_for
+import datetime
 import json
 import os
 from time import sleep
 import time
 import re, uuid
-from GPS import GPS, Location
 from MQTT import MQTT
-from Event import Event, EVENTS
 import logging
 
 myDbHash = "abcd"
@@ -23,7 +22,7 @@ def get_mac() -> str:
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
 
 
-def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler: Event) -> None:
+def lifecycle(mqtt: MQTT, ipAddress: str) -> None:
     """
     The lifecycle of the OBU
     Args:
@@ -34,8 +33,8 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
     # Create greating message
     msg: dict = {
         "type": "GREETING",
-        "device": "OBU",
-        "id": os.environ['OBU_ID'],
+        "device": "RSU",
+        "id": os.environ['RSU_ID'],
         "status": "active",
         "mac": get_mac(),
         "ip": ipAddress,
@@ -49,19 +48,19 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
     mqtt.wait_for_start()
 
     # Publish the location data to the MQTT broker
+    location: dict = {
+        "type": "GPS",
+        "latitude": os.environ['RSU_GPS_LATITUDE'],
+        "longitude": os.environ['RSU_GPS_LONGITUDE'],
+        "elevation": 2.5,
+        "timestamp": str(datetime.datetime.now())
+    }
+    mqtt.publish(mqtt.gpsTopic, json.dumps(location))
+    
+    # do nothing, just to let the OrbitDB program running
     while True:
-        location = gps.get_location()
-        if(location == None):
-            logging.info("End of GPX file")
-            break
-
-        mqtt.publish(mqtt.gpsTopic, location.json_to_str())
-        event = eventHandler.get_event()
-        if(event == None):
-            logging.info("No event generated")
-        else:
-            logging.info("Event generated: " + event.value)
-        sleep(frequency)
+        sleep(1)
+        
         
 
 if __name__ == "__main__":
@@ -73,11 +72,11 @@ if __name__ == "__main__":
     logging_format = "[%(levelname)s] %(message)s"
     logging.basicConfig(level = logLevel, format=logging_format)
 
-    logging.info("OBU with ID: %s, has mac address of %s and IP: %s", os.environ['OBU_ID'], get_mac(), os.environ['IP_ADDR'])
+    logging.info("RSU with ID: %s, has mac address of %s and IP: %s", os.environ['RSU_ID'], get_mac(), os.environ['IP_ADDR'])
 
     # Create MQTT client
-    gpsTopic: str = os.environ['MQTT_GPS_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
-    initTopic: str = os.environ['MQTT_INIT_TOPIC'] + "/OBU/" + os.environ['OBU_ID']
+    gpsTopic: str = os.environ['MQTT_GPS_TOPIC'] + "/OBU/" + os.environ['RSU_ID']
+    initTopic: str = os.environ['MQTT_INIT_TOPIC'] + "/OBU/" + os.environ['RSU_ID']
     controllerTopic: str = os.environ['MQTT_CONTROLLER_TOPIC']
     mqtt = MQTT(os.environ['MQTT_BROKER_HOST'], os.environ['MQTT_BROKER_PORT'], gpsTopic, initTopic, controllerTopic)
     try:
@@ -87,19 +86,11 @@ if __name__ == "__main__":
     except ConnectionError as e:
         logging.error("Failed to connect to MQTT broker: " + str(e))
         exit(1)
-
-    # Create GPS object
-    try:
-        logging.info("Reading GPX file: " + os.environ['GPX_FILE_PATH'])
-        gps = GPS(os.environ['GPX_FILE_PATH'])
-    except FileNotFoundError as e:
-        logging.error("Failed to read GPX file: " + str(e))
-        exit(1)
     
-    logging.info("Starting OBU lifecycle")
+    logging.info("Starting RSU lifecycle")
     try:
         mqtt.wait_for_init()
-        lifecycle(mqtt, gps, int(os.environ['GPS_MOCK_SPEED']), os.environ['IP_ADDR'], Event(int(os.environ['EVENT_PROBABILITY'])))
+        lifecycle(mqtt, os.environ['IP_ADDR'])
     except ConnectionError as e:
         logging.error("Failed to publish GPS data: " + str(e))
     except KeyboardInterrupt:
@@ -107,4 +98,4 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error("An error occurred: " + str(e))
     
-    logging.info("OBU lifecycle complete")
+    logging.info("RSU lifecycle complete")

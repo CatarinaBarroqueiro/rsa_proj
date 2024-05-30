@@ -14,7 +14,12 @@ if [ $? -ne 0 ]; then
 fi
 
 # Build RSU image
-#...
+cd ../rsu
+docker build -t $rsuImageName:1.0 .
+if [ $? -ne 0 ]; then
+    echo "Error occurred while building the RSU container $rsuImageName image"
+    exit 1
+fi
 
 # Run the containers
 cd ..
