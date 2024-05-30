@@ -18,7 +18,7 @@ import express from "express";
 */
 // Dictionary to store remote OrbitDB databases
 const remoteOrbitdbs = {};
-const remoteDatabases = {};
+const remoteHashes = {};
 const remoteLastSeq = {};
 
 // Set up libp2p and IPFS
@@ -78,12 +78,18 @@ app.post("/addHash", async (req, res) => {
     let remoteOrbitdb = await setupOrbitDB(id);
     let remoteDB = await remoteOrbitdb.open(hash)
     remoteOrbitdbs[id] = remoteOrbitdb;
-    remoteDatabases[id] = remoteDB;
+    remoteHashes[id] = hash;
     remoteLastSeq[id] = 0;
+
     //const putHash = await remoteDB.put('rsu', 'hey')
     // Print the content of the database after each message
-    //console.log(`Current content of remote database ${id}:`);
-    //console.log(await remoteDB.all());
+    console.log(`[Orbit] Current content of remote database ${id}:`);
+    console.log(await remoteDB.all());
+
+    // wait 1 second
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await remoteDB.close()
 
     console.log(`[Orbit] Connected to remote OrbitDB with ID ${id}`);
     res.json({ success: true });
@@ -95,23 +101,17 @@ app.post("/addHash", async (req, res) => {
 
 // Function to check and print new records every 5 seconds
 const checkAndPrintUpdates = async () => {
-  for (const [id, db] of Object.entries(remoteDatabases)) {
-    try {
-      const allEntries = await db.all();
-      const entries = Object.entries(allEntries).sort((a, b) => a[0] - b[0]); // Sort by sequence number
-      const lastSeq = remoteLastSeq[id];
-      const newEntries = entries.filter(([seq]) => seq > lastSeq);
+  for (const [id, hash] of Object.entries(remoteHashes)) {
+    let remoteOrbitdb = await remoteOrbitdbs[id];
+    let remoteDB = await remoteOrbitdb.open(hash);
 
-      if (newEntries.length > 0) {
-        console.log(`New entries in remote database ${id}:`);
-        newEntries.forEach(([seq, value]) => {
-          console.log(`Seq: ${seq}, Value: ${JSON.stringify(value)}`);
-        });
-        remoteLastSeq[id] = Math.max(...newEntries.map(([seq]) => seq));
-      }
-    } catch (error) {
-      console.error(`[Orbit] Error checking updates for remote database ${id}: ${error.message}`);
-    }
+    // wait 1 second
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log(`[Orbit] Current content of remote database ${id}:`);
+    console.log(await remoteDB.all());
+    
+    await remoteDB.close()
   }
 };
 
