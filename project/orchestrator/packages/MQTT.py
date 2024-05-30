@@ -103,7 +103,7 @@ class MQTT:
         """
         Wait for all the devices to be ready
         """
-        while len(self.devices) < self.obusNumber:
+        while len(self.devices) < self.obusNumber + 1: # +1 for the RSU
             logging.debug("Waiting for all devices to be ready")
             sleep(1)
 

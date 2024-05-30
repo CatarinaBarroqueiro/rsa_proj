@@ -50,17 +50,19 @@ const rl = readline.createInterface({
 const id = process.argv.length > 2 ? 2 : 1;
 
 // Generate a new id for the peer, based on the directory name of the previous peer
-const getNewId = (currentId) => {
-  let newId = currentId;
-  if (process.argv.length > 2) {
-    while (fs.existsSync(`./storage/orbitdb/${newId}`)) {
-      newId += 1;
-    }
-  }
-  return newId;
-};
+//const getNewId = (currentId) => {
+//  let newId = currentId;
+//  if (process.argv.length > 2) {
+//    while (fs.existsSync(`./storage/orbitdb/${newId}`)) {
+//      newId += 1;
+//    }
+//  }
+//  return newId;
+//};
 
-const _newId = getNewId(id);
+// Get the environment variable for the peer id
+//const _newId = getNewId(id);
+const _newId = process.env.OBU_ID;
 
 console.log(`I'm peer: ${_newId}`);
 

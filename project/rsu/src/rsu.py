@@ -11,7 +11,6 @@ import re, uuid
 from MQTT import MQTT
 import logging
 
-myDbHash = "abcd"
 
 def get_mac() -> str:
     """
@@ -38,7 +37,7 @@ def lifecycle(mqtt: MQTT, ipAddress: str) -> None:
         "status": "active",
         "mac": get_mac(),
         "ip": ipAddress,
-        "dbHash": myDbHash
+        "dbHash": "no_hash"
     }
 
     # Publish the greeting message to the MQTT broker

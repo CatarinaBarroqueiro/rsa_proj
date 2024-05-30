@@ -23,10 +23,15 @@ export IP_ADDR
 
 echo "Starting OBU_$OBU_ID application"
 cd ./src
-python3 -u obu.py # Use -u to disable buffering and prints to appear in console
+python3 -u obu.py & # Use -u to disable buffering and prints to appear in console
 
 echo "Starting OrbitDB application"
 
 cd ../orbit
-#node index.mjs
+
+# Source the nvm script to make nvm and node available
+export NVM_DIR="/root/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+node index.mjs
 
