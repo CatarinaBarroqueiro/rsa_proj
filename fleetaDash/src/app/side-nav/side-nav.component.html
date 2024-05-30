@@ -3,12 +3,12 @@
     <img src="assets/1.png" alt="Logo" class="company-logo2">
     <button (click)="onClose()">Close</button>
   </div>
-  <h1> 
+  <h1 class="item-label"> 
     <span>{{ item.label }}</span>
-  </h1>    
+  </h1> 
   <div class="side-nav-content">
     <ng-container *ngIf="item && item.length && item[0].length === 2">
-        <H1>{{ itemReceived.type }} {{ itemReceived.label }}</H1>
+      <h1>{{ itemReceived.type }} {{ itemReceived.label }}</h1>
       <table class="connections-table">
         <thead>
           <tr>
@@ -25,22 +25,38 @@
     </ng-container>    
     <br>
     <div class="toggle-container" *ngIf="!isConnectionsArray(item) && item.type === 'car'">
-      <b><span class="filter-legend">Filter by Car</span></b>
-      <label class="toggle-switch">
-        <input type="checkbox"(click)="onShowFilterClicked()" >
-        <span class="slider"></span>
-      </label>
+      <div class="filter-label">
+        <b><span class="filter-legend">Filter by Car</span></b>
+      </div>
+      <div class="toggle-switch-container">
+        <label class="toggle-switch">
+          <input type="checkbox" (click)="onShowFilterClicked()">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
     <div class="toggle-container" *ngIf="!isConnectionsArray(item)">
-      <b><span class="filter-legend">Filter by Car</span></b>
-      <label class="toggle-switch">
-        <input type="checkbox"(click)="onShowFilterClicked()" >
-        <span class="slider"></span>
-      </label>
+      <div class="filter-label">
+        <b><span class="filter-legend">Filter by Car</span></b>
+      </div>
+      <div class="toggle-switch-container">
+        <label class="toggle-switch">
+          <input type="checkbox" (click)="onShowFilterClicked()">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
-        <br>
-        <button class="show-route-button" *ngIf="!isConnectionsArray(item) " (click)="onShowRouteClicked()">Show Route</button>
-
-    <button class="show-route-button" *ngIf="!isConnectionsArray(item) && item.type === 'car'" (click)="onShowRouteClicked()">Show Route</button>
+    <br>
+    <div class="toggle-container" *ngIf="!isConnectionsArray(item)">
+      <div class="filter-label">
+        <b><span class="filter-legend">Show Route</span></b>
+      </div>
+      <div class="toggle-switch-container">
+        <label class="toggle-switch">
+          <input type="checkbox" (click)="onShowRouteClicked()">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
   </div>
 </div>

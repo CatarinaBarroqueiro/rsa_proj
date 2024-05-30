@@ -99,10 +99,7 @@ private svgRSUicon = `
   
   private markerData : MarkerData[] = [];
 
-  private connections: string[][] = [
-    ['Car A', 'Car C']
-   
-  ];
+  private connections: string[][] = [];
 
   private routePolyline: L.Polyline | undefined;
   showRouteButton: boolean | undefined;
@@ -151,12 +148,12 @@ private svgRSUicon = `
     }
   
     return new L.DivIcon({
-      html: `<div style="display: flex; flex-direction: column; align-items: center;">
-        ${iconSvg}
-        <div style="font-size: 9px; font-weight: bold; background: ${backgroundColor}; padding: 8px 12px; margin: 10px; border-radius: 6px; align-text:center;">
-          ${label}
-        </div>
-      </div>
+      html: `        <div style="background-color: ${backgroundColor}; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+      ${iconSvg}
+    </div>
+    <div style="position: absolute; top: 65px; left: -30px; width: 120px; text-align: center; font-size: 14px;">
+     <b> ${label} </b>
+    </div>
       `,
       className: '', 
       iconSize: type === 'car' ? [25, 25] : [25, 41], 
