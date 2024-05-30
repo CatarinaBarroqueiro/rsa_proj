@@ -40,6 +40,7 @@ const libp2pOptions = {
   },
 };
 
+// Create the terminal reader interface
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -48,10 +49,11 @@ const rl = readline.createInterface({
 // only supports creation of database or connecting to one remote database
 const id = process.argv.length > 2 ? 2 : 1;
 
+// Generate a new id for the peer, based on the directory name of the previous peer
 const getNewId = (currentId) => {
   let newId = currentId;
   if (process.argv.length > 2) {
-    while (fs.existsSync(`./orbitdb/${newId}`)) {
+    while (fs.existsSync(`./storage/orbitdb/${newId}`)) {
       newId += 1;
     }
   }
@@ -60,7 +62,9 @@ const getNewId = (currentId) => {
 
 const _newId = getNewId(id);
 
-const blockstore = new LevelBlockstore(`./ipfs/${_newId}`);
+console.log(`I'm peer: ${_newId}`);
+
+const blockstore = new LevelBlockstore(`./storage/ipfs/${_newId}`);
 
 const libp2p = await createLibp2p(libp2pOptions);
 
@@ -69,75 +73,59 @@ const ipfs = await createHelia({ libp2p, blockstore });
 const orbitdb = await createOrbitDB({
   ipfs,
   id: `nodejs-${_newId}`,
-  directory: `./orbitdb/${_newId}`,
+  directory: `./storage/orbitdb/${_newId}`,
 });
 
 let db;
 
 const askQuestion = (_newId) => {
   // Ask the user to input messages
-  rl.question("Type a message to send: ", async (message) => {
-    await db.add({ from: _newId, message });
+  rl.question("Type a key: ", (key) => {
+    rl.question("Type a value: ", async (value) => {
+      await db.put(key, value);
 
-    if (message === "exit") {
-      // Close the readline interface and end the process
-      rl.close();
-      await db.close();
-      await orbitdb.stop();
-      await ipfs.stop();
-      process.exit(0);
-    } else {
-      // Print the content of the database after each message
-      console.log("Current database content:");
-      console.log(await db.all());
+      if (key === "exit" || value === "exit") {
+        // Close the readline interface and end the process
+        rl.close();
+        await db.close();
+        await orbitdb.stop();
+        await ipfs.stop();
+        process.exit(0);
+      } else {
+        // Print the content of the database after each entry
+        console.log("Current database content:");
+        console.log(await db.all());
 
-      askQuestion(_newId);
-    }
+        askQuestion(_newId);
+      }
+    });
   });
 };
 
+const printDB = async () => {
+  console.log("Current database content:");
+  console.log(await db.all());
+}
+
+// Connect to a remote database if an address is provided
 if (process.argv.length > 2) {
   const remoteDBAddress = process.argv.pop();
-  db = await orbitdb.open(remoteDBAddress);
+  db = await orbitdb.open(remoteDBAddress, { type: "keyvalue" });
 
-  // Listen for incoming messages
-  db.events.on("update", (event) => {
-    const latestMessage = event.payload.value;
+  // call the printDB function every 10 seconds
+  setInterval(printDB, 10000);
 
-    process.stdout.write("\r");
-
-    if (latestMessage.from !== _newId) {
-      console.log(
-        `Received message from peer ${latestMessage.from}: ${latestMessage.message}\n`
-      );
-    }
-
-    askQuestion(_newId);
-  });
-
-  askQuestion(_newId);
+// Create a new database if no address is provided
 } else {
-  db = await orbitdb.open("chat-app", {
+  const dbName = `obu_${_newId}`;
+  db = await orbitdb.open(dbName, {
+    create: true,
+    type: "keyvalue",
     AccessController: OrbitDBAccessController({ write: ["*"] }),
     replicate: true,
   });
 
-  console.log(`Your database address: ${db.address.toString()}`);
-
-  // Listen for incoming messages
-  db.events.on("update", (event) => {
-    const latestMessage = event.payload.value;
-
-    process.stdout.write("\r");
-
-    if (latestMessage.from !== _newId) {
-      console.log(
-        `Received message from peer ${latestMessage.from}: ${latestMessage.message}\n`
-      );
-    }
-
-    askQuestion(_newId);
-  });
+  console.log(`Your database name: ${dbName}, address: ${db.address.toString()}`);
 
   askQuestion(_newId);
 }
