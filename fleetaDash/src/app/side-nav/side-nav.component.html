@@ -3,9 +3,18 @@
     <img src="assets/1.png" alt="Logo" class="company-logo2">
     <button (click)="onClose()">Close</button>
   </div>
-  <h1 class="item-label"> 
+  <h1>
     <span>{{ item.label }}</span>
-  </h1> 
+  </h1>
+  <div *ngIf="item && item.label">
+    <div class="icon-container">
+      <img [src]="getIconForEvent(item.type)" alt="Event Icon"class="small-icon">
+    </div>
+  </div>
+  
+  
+
+  <span>{{ this.description }}</span>
   <div class="side-nav-content">
     <ng-container *ngIf="item && item.length && item[0].length === 2">
       <h1>{{ itemReceived.type }} {{ itemReceived.label }}</h1>

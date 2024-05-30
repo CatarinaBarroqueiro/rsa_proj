@@ -113,7 +113,7 @@ private svgRSUicon = `
     const labelNumber = parseInt(label);
   
     // Determine type based on labelNumber
-    if (labelNumber > 100) {
+    if (labelNumber > 99) {
       type = 'rsu';
     } else {
       type = 'car';

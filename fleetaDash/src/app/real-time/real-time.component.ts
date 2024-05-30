@@ -107,8 +107,7 @@ export class RealTimeComponent {
       this.dataSubscription.unsubscribe();
     }
   
-    // Set up a new subscription to fetch data every 5 seconds
-    this.dataSubscription = interval(2000).subscribe(() => {
+    this.dataSubscription = interval(1000).subscribe(() => {
       const url = 'http://localhost:3000/realtime';
       this.http.get<any>(url).subscribe(
         (response) => {
@@ -141,7 +140,7 @@ export class RealTimeComponent {
                   const { obu: label, location: { latitude, longitude } } = obu;
                   const coords: L.LatLngTuple = [latitude, longitude];
                   let type: string = 'car';
-                  if (!isNaN(Number(obu.obu)) && Number(obu.obu) > 100) {
+                  if (!isNaN(Number(obu.obu)) && Number(obu.obu) > 99) {
                     type = 'rsu';
                   }
                   this.markerData.push({ coords, label, type });
