@@ -13,9 +13,6 @@ from Event import Event, EVENTS
 import logging
 import requests
 
-""" Used to keep track of how many requests where sent to orbit """
-sequenceCounter: int = 0
-
 def get_mac() -> str:
     """
     Get the MAC address of the OBU
@@ -55,12 +52,13 @@ def add_hashes_to_orbitdb(hashes: dict[str, str]):
             logging.error(f"Failed to make Hash POST request. Status code: {response.status_code}, Response: {response.json()}")
 
 
-def add_gps_event_to_orbitdb(location: Location, event: Event):
+def add_gps_event_to_orbitdb(location: Location, event: Event, sequenceCounter: int):
     """
     Add the GPS location and event to the OrbitDB
     Args:
         - location: The GPS location
         - event: The event
+        - sequenceCounter: The sequence counter
     """
     url = "http://localhost:" + os.environ['PYTHON_NODE_API_PORT'] + "/addData"
 
@@ -75,7 +73,7 @@ def add_gps_event_to_orbitdb(location: Location, event: Event):
         "longitude": float(location.longitude),
         "event": eventStr
     }
-
+    
     jsonPayload = json.dumps(payload)
     logging.debug("Sending data to orbit: " + jsonPayload)
 
@@ -130,6 +128,9 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
     # Add the hashes of the devices to the OrbitDB
     add_hashes_to_orbitdb(mqtt.devicesHash)
 
+    # Used to keep track of how many requests where sent to orbit
+    sequenceCounter: int = 0
+
     # Publish the location data to the MQTT broker
     while True:
         location = gps.get_location()
@@ -139,11 +140,13 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
 
         mqtt.publish(mqtt.gpsTopic, location.json_to_str())
         event = eventHandler.get_event()
-        add_gps_event_to_orbitdb(location, event)
+        add_gps_event_to_orbitdb(location, event, sequenceCounter)
         if(event == None):
             logging.debug("No event generated")
         else:
             logging.info("Event generated: " + event.value)
+
+        sequenceCounter += 1
         sleep(frequency)
         
 
