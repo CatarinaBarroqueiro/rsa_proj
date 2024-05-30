@@ -4,6 +4,7 @@
 import logging
 import json
 import codecs
+from time import sleep
 import paho.mqtt.client as mqtt
 import datetime
 from threading import Lock, Timer
@@ -17,24 +18,33 @@ class MQTT:
     Attributes:
         - brokerHostName: The hostname of the MQTT broker
         - brokerPort: The port number of the MQTT broker
-        - topic: The topic to publish the data
+        - gasTopic: The topic for the gas data
+        - initTopic: The topic for the hash data
+        - controllerTopic: The topic for the controller data
+        - obusNumber: The number of OBU's
         - client: The MQTT client
         - obuLocations: The dictionary of OBU locations
         - devices: The dictionary of devices
     """
-    def __init__(self, brokerHostName: str, brokerHostPort: str, topic: str) -> None:
+    def __init__(self, brokerHostName: str, brokerHostPort: str, gasTopic: str, initTopic: str, controllerTopic: str, obusNumber: int) -> None:
         """
         Initialize the class
         Args:
             - brokerHostName: The hostname of the MQTT broker
             - brokerHostPort: The port number of the MQTT broker
-            - topic: The topic to publish the data
+            - gasTopic: The topic for the gas data
+            - initTopic: The topic for the hash data
+            - controllerTopic: The topic for the controller data
+            - obusNumber: The number of OBU's
         Raises:
             - ValueError: If the port number is not an integer
         """
         self.brokerHostName: str = brokerHostName
         self.brokerHostPort: int = int(brokerHostPort)
-        self.topic: str = topic
+        self.gasTopic: str = gasTopic
+        self.initTopic: str = initTopic
+        self.controllerTopic: str = controllerTopic
+        self.obusNumber: int = obusNumber
         self.client: mqtt.ClientClient | None = None
         self.locations: dict[int, Location] = {}  # Device ID -> Location
         self.devices: dict[int, Device] = {}  # Device ID -> Device
@@ -52,7 +62,8 @@ class MQTT:
         self.client.on_connect = self.on_connect
         # Repeatly call the loop() in a thread, until disconnect() is called
         self.client.loop_start()
-        self.client.subscribe(self.topic)
+        self.client.subscribe(self.gasTopic)
+        self.client.subscribe(self.initTopic)
 
 
     def publish(self, message: str) -> None:
@@ -63,8 +74,8 @@ class MQTT:
         Raises:
             - ConnectionError: If the connection to the MQTT broker fails
         """
-        logging.debug("Publishing to MQTT: " + message + " to topic: " + self.topic)
-        self.client.publish(self.topic, message)
+        logging.debug("Publishing to MQTT: " + message + " to topic: " + self.controllerTopic)
+        self.client.publish(self.controllerTopic, message)
 
 
     def disconnect(self) -> None:
@@ -87,6 +98,14 @@ class MQTT:
         """
         logging.debug("Connected to MQTT broker")
         #self.client.subscribe(self.topic)
+
+    def wait_all_ready(self) -> None:
+        """
+        Wait for all the devices to be ready
+        """
+        while len(self.devices) < self.obusNumber:
+            logging.debug("Waiting for all devices to be ready")
+            sleep(1)
 
 
     def _on_message(self, client, userdata, message) -> None:
@@ -114,7 +133,7 @@ class MQTT:
         except ValueError as e:
             logging.error("Error parsing the OBU ID: " + str(e))
             return
-
+        
         # Check if the message has the required fields
         if not check_dict_fields(payload, ['type']) or (payload['type'] != 'GPS' and payload['type'] != 'GREETING'):
             logging.error("Received a message without/invalid message type")
@@ -130,7 +149,8 @@ class MQTT:
                                     payload['id'], 
                                     payload['status'], 
                                     payload['mac'], 
-                                    payload['ip']
+                                    payload['ip'],
+                                    payload['dbHash']
                                     )
             device.configure_device()
             self.devices[devId] = device

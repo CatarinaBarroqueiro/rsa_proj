@@ -1,15 +1,21 @@
 """
 `orchestrator.py` is the main file that is responsible for the managing connections between the OBU's and RSU
 """
+from calendar import c
 import logging
+import json
+import requests
 import os
 import configparser
 from time import sleep
+from xmlrpc.client import Boolean
 from packages.MQTT import MQTT
 from packages.Device import Device
 from packages.Location import Location
 
-#connectedDevices: list[list] = []
+# Global variables
+BACKEND_URL = ""
+connectedDevices: list[list] = []
 
 def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     """
@@ -22,7 +28,7 @@ def join_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     #if [device1.deviceID, device2.deviceID] in connectedDevices:
     #    return
 
-    #connectedDevices.append([device1.deviceID, device2.deviceID])
+    connectedDevices.append([device1.deviceID, device2.deviceID])
     logging.info("Devices " + str(device1.deviceID) + " and " + str(device2.deviceID) + " are connected")
     if device1.mac not in device2.blockedMac or device2.mac not in device1.blockedMac:
         return
@@ -43,9 +49,65 @@ def block_devices(mqtt: MQTT, device1: Device, device2: Device) -> None:
     if device1.mac in device2.blockedMac or device2.mac in device1.blockedMac:
         return
     
+    if connectedDevices.count([device1.deviceID, device2.deviceID]) > 0:
+        connectedDevices.remove([device1.deviceID, device2.deviceID])
+
     device1.block_device(device2.mac)
     device2.block_device(device1.mac)
 
+
+def send_to_backend(mqtt: MQTT) -> bool:
+    """
+    Send the data to the dashboard backend
+    Args:
+        - mqtt: The MQTT client
+    Returns:
+        - bool: True if the data was sent successfully, False otherwise
+    """
+    payload: dict = {}
+
+    # Add OBU's
+    obus: list[dict] = []
+    for key, value in mqtt.devices.items():
+        obus.append({
+            "obu": value.deviceID,
+            "location": {
+                "latitude": value.latitude,
+                "longitude": value.longitude
+            },
+        })
+    payload["obus"] = obus
+
+    # Add Connectivity
+    connectivity: list[dict] = []
+    for value in connectedDevices:
+        connectivity.append({
+            "pair": {
+                "obu1": value[0],
+                "obu2": value[1]
+            }
+        })
+
+    # Convert the data to JSON format
+    jsonPayload = json.dumps(payload)
+
+    # Headers (optional, but often required for APIs expecting JSON data)
+    headers = {
+        "Content-Type": "application/json",
+    }
+    
+    logging.info("Sending data to backend: " + jsonPayload)
+
+    # Send the POST request
+    response = requests.post(BACKEND_URL, data=jsonPayload, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        logging.info("POST request was successful!")
+    else:
+        logging.error(f"Failed to make POST request. Status code: {response.status_code}")
+
+    
 
 def lifecycle(mqtt: MQTT) -> None:
     """
@@ -64,8 +126,12 @@ def lifecycle(mqtt: MQTT) -> None:
                 else:
                     block_devices(mqtt, mqtt.devices[key], mqtt.devices[compKey])
 
+        # Update real-time dashboard
+        send_to_backend(mqtt)
+
         # Sleep for 5 seconds
         sleep(5)
+
 
 if __name__ == "__main__":
     # Create a new configuration object
@@ -78,9 +144,13 @@ if __name__ == "__main__":
     MQTT_BROKER_HOST = config['MQTT_Settings']['MQTT_BROKER_HOST']
     MQTT_BROKER_PORT = config['MQTT_Settings']['MQTT_BROKER_PORT']
     GPS_TOPIC = config['MQTT_Settings']['GPS_TOPIC']
+    INIT_TOPIC = config['MQTT_Settings']['INIT_TOPIC']
+    CONTROLLER_TOPIC = config['MQTT_Settings']['CONTROLLER_TOPIC']
 
     # General Configurations
     LOG_LEVEL = config['Settings']['LOG_LEVEL']
+    BACKEND_URL = config['Settings']['BACKEND_URL']
+    OBUS_NUMBER = int(config['Settings']['OBUS_NUMBER'])
 
     # Create logger
     logLevel = getattr(logging, LOG_LEVEL.upper(), None)
@@ -91,7 +161,7 @@ if __name__ == "__main__":
     logging.basicConfig(level = logLevel, format=logging_format)
 
     # Create MQTT client
-    mqtt = MQTT(MQTT_BROKER_HOST, MQTT_BROKER_PORT, GPS_TOPIC)
+    mqtt = MQTT(MQTT_BROKER_HOST, MQTT_BROKER_PORT, GPS_TOPIC, INIT_TOPIC, CONTROLLER_TOPIC, OBUS_NUMBER)
     try:
         logging.info("Connecting to MQTT broker with address: " + MQTT_BROKER_HOST + " and port: " + MQTT_BROKER_PORT + " and topic: " + GPS_TOPIC)
         mqtt.connect()
@@ -101,6 +171,7 @@ if __name__ == "__main__":
 
     logging.info("Starting Orchestrator lifecycle")
     try:
+        mqtt.wait_all_ready()
         lifecycle(mqtt)
     except KeyboardInterrupt:
         logging.info("Orchestrator lifecycle interrupted")

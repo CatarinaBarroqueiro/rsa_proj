@@ -52,6 +52,7 @@ def lifecycle(mqtt: MQTT, gps: GPS, frequency: int, ipAddress: str, eventHandler
         else:
             logging.info("Event generated: " + event.value)
         sleep(frequency)
+        
 
 if __name__ == "__main__":
     # Create logger
