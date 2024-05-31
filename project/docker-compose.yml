@@ -114,6 +114,102 @@ services:
       fleeta-network:
           ipv4_address: 192.168.98.14
 
+  fleeta-obu_5:
+    image: fleeta-obu:1.0
+    container_name: fleeta-obu_5
+    environment:
+      - OBU_ID=5
+      - MQTT_BROKER_HOST=fleeta-mqtt-broker #192.168.98.10
+      - MQTT_BROKER_PORT=1883
+      - MQTT_GPS_TOPIC=gps-location
+      - MQTT_INIT_TOPIC=init
+      - MQTT_CONTROLLER_TOPIC=controller
+      - GPX_FILE_PATH=/app/mock_gpx/track_5.gpx
+      - GPS_MOCK_SPEED=2
+      - EVENT_PROBABILITY=5
+      - LOG_LEVEL=INFO
+      - SUPPORT_MAC_BLOCKING=true
+      - PYTHON_NODE_API_PORT=8000
+    mac_address: 02:42:c0:a8:62:05
+    depends_on:
+      - fleeta-mqtt-broker
+    networks:
+      #- fleeta-network
+      fleeta-network:
+          ipv4_address: 192.168.98.15
+
+  #fleeta-obu_6:
+  #  image: fleeta-obu:1.0
+  #  container_name: fleeta-obu_6
+  #  environment:
+  #    - OBU_ID=6
+  #    - MQTT_BROKER_HOST=fleeta-mqtt-broker #192.168.98.10
+  #    - MQTT_BROKER_PORT=1883
+  #    - MQTT_GPS_TOPIC=gps-location
+  #    - MQTT_INIT_TOPIC=init
+  #    - MQTT_CONTROLLER_TOPIC=controller
+  #    - GPX_FILE_PATH=/app/mock_gpx/track_6.gpx
+  #    - GPS_MOCK_SPEED=2
+  #    - EVENT_PROBABILITY=5
+  #    - LOG_LEVEL=INFO
+  #    - SUPPORT_MAC_BLOCKING=true
+  #    - PYTHON_NODE_API_PORT=8000
+  #  mac_address: 02:42:c0:a8:62:06
+  #  depends_on:
+  #    - fleeta-mqtt-broker
+  #  networks:
+  #    #- fleeta-network
+  #    fleeta-network:
+  #        ipv4_address: 192.168.98.16
+
+  #fleeta-obu_7:
+  #  image: fleeta-obu:1.0
+  #  container_name: fleeta-obu_7
+  #  environment:
+  #    - OBU_ID=7
+  #    - MQTT_BROKER_HOST=fleeta-mqtt-broker #192.168.98.10
+  #    - MQTT_BROKER_PORT=1883
+  #    - MQTT_GPS_TOPIC=gps-location
+  #    - MQTT_INIT_TOPIC=init
+  #    - MQTT_CONTROLLER_TOPIC=controller
+  #    - GPX_FILE_PATH=/app/mock_gpx/track_7.gpx
+  #    - GPS_MOCK_SPEED=2
+  #    - EVENT_PROBABILITY=5
+  #    - LOG_LEVEL=INFO
+  #    - SUPPORT_MAC_BLOCKING=true
+  #    - PYTHON_NODE_API_PORT=8000
+  #  mac_address: 02:42:c0:a8:62:07
+  #  depends_on:
+  #    - fleeta-mqtt-broker
+  #  networks:
+  #    #- fleeta-network
+  #    fleeta-network:
+  #        ipv4_address: 192.168.98.17
+
+  #fleeta-obu_8:
+  #  image: fleeta-obu:1.0
+  #  container_name: fleeta-obu_8
+  #  environment:
+  #    - OBU_ID=8
+  #    - MQTT_BROKER_HOST=fleeta-mqtt-broker #192.168.98.10
+  #    - MQTT_BROKER_PORT=1883
+  #    - MQTT_GPS_TOPIC=gps-location
+  #    - MQTT_INIT_TOPIC=init
+  #    - MQTT_CONTROLLER_TOPIC=controller
+  #    - GPX_FILE_PATH=/app/mock_gpx/track_8.gpx
+  #    - GPS_MOCK_SPEED=2
+  #    - EVENT_PROBABILITY=5
+  #    - LOG_LEVEL=INFO
+  #    - SUPPORT_MAC_BLOCKING=true
+  #    - PYTHON_NODE_API_PORT=8000
+  #  mac_address: 02:42:c0:a8:62:08
+  #  depends_on:
+  #    - fleeta-mqtt-broker
+  #  networks:
+  #    #- fleeta-network
+  #    fleeta-network:
+  #        ipv4_address: 192.168.98.18
+
   fleeta-rsu_100:
     image: fleeta-rsu:1.0
     container_name: fleeta-rsu_100

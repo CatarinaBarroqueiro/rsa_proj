@@ -25,6 +25,7 @@ class Device:
     dbHash: str
     blockedMac: list[str]
 
+
     def __init__(self, deviceType: str, deviceID: str, status: str, mac: str, ip: str, dbHash: str) -> None:
         """
         Initialize the class
@@ -44,6 +45,7 @@ class Device:
         self.dbHash = dbHash
         self.blockedMac = []
 
+
     def __str__(self) -> str:
         """
         Return the string representation of the device
@@ -52,6 +54,7 @@ class Device:
         """
         return f"Device: {self.deviceType}, {self.deviceID}, {self.status}, {self.mac}, {self.ip}, {self.dbHash}"
     
+
     def json_to_str(self) -> str:
         """
         Transform the Device data to JSON format
@@ -67,6 +70,7 @@ class Device:
             "dbHash": self.dbHash
         }
         return json.dumps(data)
+
 
     def configure_device(self) -> bool:
         """
@@ -118,6 +122,7 @@ class Device:
             logging.error(f"Error occurred while blocking the device with MAC: {macToBlock} on {self.deviceType}_{self.deviceID}")
             return False
         
+
     def unblock_device(self, macToUnblock: str) -> bool:
         """
         Unblock the device
@@ -127,18 +132,8 @@ class Device:
             - True if the device is unblocked, False otherwise
         """
         if macToUnblock not in self.blockedMac:
+            logging.error("Device is already unblocked")
             return False
-        
-        #if self.deviceType == "OBU":
-        #    os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
-        #    self.blockedMac.remove(macToUnblock)
-        #    return True
-        #elif self.deviceType == "RSU":
-        #    os.system(f"docker exec --privileged fleeta-rsu_{self.deviceID} unblock {macToUnblock}")
-        #    self.blockedMac.remove(macToUnblock)
-        #    return True
-        #else:
-        #    return False
         
         if self.deviceType == "OBU":
             ret = 0 #os.system(f"docker exec --privileged fleeta-obu_{self.deviceID} unblock {macToUnblock}")
