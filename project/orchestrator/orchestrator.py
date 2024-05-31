@@ -71,7 +71,7 @@ def send_to_backend(mqtt: MQTT, backendURL: str) -> bool:
             False if device locations is different than the configured
             obus number or if otherwise connection to backend couldn't be established
     """
-    if len(mqtt.locations.values()) < mqtt.obusNumber:
+    if len(mqtt.locations.values()) < mqtt.obusNumber + 1:
         return False
     
     payload: dict = {}

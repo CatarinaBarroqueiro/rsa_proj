@@ -148,7 +148,7 @@ services:
       - MQTT_GPS_TOPIC=gps-location
       - MQTT_INIT_TOPIC=init
       - MQTT_CONTROLLER_TOPIC=controller
-      - GPX_FILE_PATH=/app/mock_gpx/track_7.gpx
+      - GPX_FILE_PATH=/app/mock_gpx/track_6.gpx
       - GPS_MOCK_SPEED=2
       - EVENT_PROBABILITY=5
       - LOG_LEVEL=INFO
