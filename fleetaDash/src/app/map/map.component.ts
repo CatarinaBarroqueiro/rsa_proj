@@ -148,10 +148,10 @@ private svgRSUicon = `
     }
   
     return new L.DivIcon({
-      html: `        <div style="background-color: ${backgroundColor}; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+      html: `        <div style="background-color: ${backgroundColor}; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
       ${iconSvg}
     </div>
-    <div style="position: absolute; top: 65px; left: -30px; width: 120px; text-align: center; font-size: 14px;">
+    <div style="position: absolute; top: 25px; left: -10px; width: 40px; text-align: center; font-size: 12px;">
      <b> ${label} </b>
     </div>
       `,
