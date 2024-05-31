@@ -4,7 +4,7 @@ import { RealTimeComponent } from './real-time/real-time.component';
 import { LoginComponent } from './login/login.component';
 export const routes: Routes = [
     {
-        path: '',
+        path: 'main',
         component: MapComponent,
         title: 'Map Page'
     },
@@ -14,7 +14,7 @@ export const routes: Routes = [
         title: 'Real Time Page'
     },
     {
-        path: 'login',
+        path: '',
         component: LoginComponent,
         title: 'Login Page'
     }

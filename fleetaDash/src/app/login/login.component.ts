@@ -24,7 +24,7 @@ export class LoginComponent {
     // Simulating successful login for the given user
     if (this.email === 'user@ua.pt' && this.password === 'user') {
       // Redirect the user to the home page
-      this.router.navigate(['/']);
+      this.router.navigate(['/main']);
     } else {
       // Handle invalid credentials or other login errors
       console.log('Invalid credentials. Please try again.');
