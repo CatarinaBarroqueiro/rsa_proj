@@ -50,6 +50,7 @@ class Location:
         Returns:
             - The Location data in JSON format
         """
+
         data: json = {
             "type": "GPS",
             "latitude": self.latitude,
@@ -58,7 +59,7 @@ class Location:
             "timestamp": str(self.timestamp)
         }
         return json.dumps(data)
-
+    
 
 class GPS:
     """

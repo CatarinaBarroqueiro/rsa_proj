@@ -105,7 +105,7 @@ const postNewEntry = async (id, seq, entry) => {
   };
 
   try {
-    const response = await axios.post('http://192.168.68.111:3000/history', dataToPost);
+    const response = await axios.post('http://192.168.21.255:3000/history', dataToPost);
     console.log(`Successfully posted entry ${seq} to external API:`);
   } catch (error) {
     console.error(`Failed to post entry ${seq} to external API:`, error.message);
@@ -120,7 +120,7 @@ const checkAndPrintUpdates = async () => {
   for (const [id, db] of Object.entries(remoteDatabases)) {
     try { 
       // wait 1 second
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      //await new Promise(resolve => setTimeout(resolve, 2000));
 
       //console.log(`[Orbit] Current content of remote database ${id}:`);
       //console.log(await db.all());
@@ -128,7 +128,10 @@ const checkAndPrintUpdates = async () => {
       const entries = Object.entries(allEntries).sort((a, b) => a[0] - b[0]); // Sort by sequence number
       const lastSeq = remoteLastSeq[id];
       const newEntries = entries.filter(([seq]) => seq > lastSeq);
+      //console.log(`Entries of ${id}: ${allEntries}`);
+      //console.log(allEntries);
       if (newEntries.length > 0) {
+        //console.log("Number of new entries: ", newEntries.length);
         console.log(`New entries in remote database ${id}:`);
         for (const [seq, entry] of newEntries) {
           console.log(`Seq: ${seq}, Value: ${JSON.stringify(entry)}`);

@@ -1,0 +1,13 @@
+fleeta-backend:
+	docker compose up
+	
+fleetaDash:
+	ng serve
+	
+project:
+	sh buildAndRun.sh
+	
+project/orchestrator:
+	./venv/bin/python3 orchestrator.py
+
+Don't forget to adjust Ip address in rsu callback to backend
