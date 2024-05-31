@@ -45,7 +45,7 @@ export class SideNavComponent {
         "FUEL_DROP", "FUEL_INCREASE", "DRIVER_CHANGED", "ENGINE_STARTED",
         "ENGINE_STOPPED", "DOOR_OPENED", "DOOR_CLOSED", "WINDOW_OPENED",
         "WINDOW_CLOSED", "SOS", "VIBRATION", "OVERSPEED", "TAMPERING",
-        "LOW_POWER", "LOW_BATTERY", "HIGH_TEMPERATURE", "LOW_TEMPERATURE", "MAINTENANCE"
+        "LOW_POWER", "LOW_BATTERY", "HIGH_TEMPERATURE", "LOW_TEMPERATURE", "MAINTENANCE", "NONE"
     ];
     this.description = eventLabel.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
     console.log("allEvents: ", allEvents);
