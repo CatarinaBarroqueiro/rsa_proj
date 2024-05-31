@@ -267,7 +267,7 @@ private svgRSUicon = `
       const coordinates: L.LatLngTuple[] = apiResponse.map((data: { latitude: string; longitude: string; }) => [parseFloat(data.latitude), parseFloat(data.longitude)]);
   
       // Update the carRoute array with the coordinates from the API response
-      this.carRoute = coordinates.slice(0, 10); // Limit to a maximum of 10 values
+      this.carRoute = coordinates.slice(0, 100); // Limit to a maximum of 10 values
   
       // Add the API response data to the markerData array
       this.markerData = apiResponse.map((data: { latitude: string; longitude: string; obu: string; event: string; }) => {
