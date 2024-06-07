@@ -105,7 +105,7 @@ const postNewEntry = async (id, seq, entry) => {
   };
 
   try {
-    const response = await axios.post('http://192.168.122.1:3000/history', dataToPost);
+    const response = await axios.post('http://192.168.23.227:3000/history', dataToPost);
     console.log(`Successfully posted entry ${seq} to external API:`);
   } catch (error) {
     console.error(`Failed to post entry ${seq} to external API:`, error.message);
